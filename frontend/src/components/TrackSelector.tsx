@@ -29,6 +29,7 @@ const TrackSelector: React.FC<TrackSelectorProps> = ({ lessons, selectedTrack, o
       case 'web-development': return '🌐';
       case 'data-processing': return '⚙️';
       case 'ai-ml': return '🤖';
+      case 'algorithms': return '⚡';
       default: return '📚';
     }
   };
@@ -42,6 +43,7 @@ const TrackSelector: React.FC<TrackSelectorProps> = ({ lessons, selectedTrack, o
       case 'web-development': return 'Build web APIs and applications with Flask';
       case 'data-processing': return 'Work with files, CSV data, and databases';
       case 'ai-ml': return 'PyTorch, transformers, LLMs, and cutting-edge AI development';
+      case 'algorithms': return 'Solve coding challenges and master data structures & algorithms';
       default: return 'Learn Python step by step';
     }
   };
