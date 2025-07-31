@@ -111,18 +111,18 @@ class ExecutionService {
 
     // For now, make basic AI/ML concepts browser-compatible
     // These can use mock implementations or simplified versions
-    const browserCompatibleConcepts = [
-      'pytorch',
-      'tensors',
-      'deep-learning',
-      'transformers',
-      'multi-head-attention',
-      'transformer-block',
-      'gpt',
-      'numpy',
-      'arrays',
-      'data-structures'
-    ];
+    // const browserCompatibleConcepts = [
+    //   'pytorch',
+    //   'tensors',
+    //   'deep-learning',
+    //   'transformers',
+    //   'multi-head-attention',
+    //   'transformer-block',
+    //   'gpt',
+    //   'numpy',
+    //   'arrays',
+    //   'data-structures'
+    // ];
 
     return concepts.some(concept => dockerRequiredConcepts.includes(concept));
   }

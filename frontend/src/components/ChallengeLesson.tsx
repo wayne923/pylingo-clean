@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Lesson, TestCase } from '../data/lessons';
+import React, { useState } from 'react';
+import { Lesson } from '../data/lessons';
 import { ApiLesson } from '../services/api';
 import { testRunnerService, TestSuiteResult } from '../services/testRunner';
 import Editor from '@monaco-editor/react';

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import Lesson from './components/Lesson';
 import ChallengeLesson from './components/ChallengeLesson';
@@ -94,7 +94,7 @@ function App() {
     setShowEnhancedAuth(true);
   };
 
-  const loadUserPreferences = async () => {
+  const loadUserPreferences = useCallback(async () => {
     try {
       const preferences = await authService.getUserPreferences();
       if (preferences) {
@@ -143,7 +143,7 @@ function App() {
     } catch (error) {
       console.error('Error loading user preferences:', error);
     }
-  };
+  }, []);
 
   const handleAuthSuccess = () => {
     setShowLandingPage(false);
@@ -201,7 +201,7 @@ function App() {
       // Load user preferences from backend
       loadUserPreferences();
     }
-  }, []);
+  }, [loadUserPreferences]);
 
   // Load progress from localStorage
   useEffect(() => {
