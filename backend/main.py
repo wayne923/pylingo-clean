@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from typing import List
 from database import get_db, create_tables
 from models import Track, Lesson, UserProgress, User
 from schemas import UserCreate, UserResponse, UserLogin, Token, UserProgressCreate, UserProgressResponse, LessonCreate, LessonResponse
