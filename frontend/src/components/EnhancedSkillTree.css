@@ -1071,6 +1071,53 @@
     transform: scale(0.98);
     transition: transform 0.1s ease;
   }
+  
+  /* Performance optimizations for mobile - disable heavy animations */
+  .enhanced-skill-tree::before {
+    animation: none !important; /* Disable background pulse */
+  }
+  
+  .header-left h2 {
+    animation: none !important; /* Disable title shimmer */
+  }
+  
+  .node-icon {
+    animation: none !important; /* Disable icon float */
+  }
+  
+  .enhanced-skill-node:hover .node-glow {
+    animation: none !important; /* Disable glow pulse */
+  }
+  
+  .mastery-effect {
+    animation: none !important; /* Disable mastery glow */
+  }
+  
+  .celebration-particle {
+    animation: none !important; /* Disable particle animations */
+  }
+  
+  .skill-connection.animated {
+    animation: none !important; /* Disable connection pulse */
+  }
+  
+  /* Reduce blur effects that are expensive on mobile */
+  .skill-tree-header,
+  .enhanced-skill-node,
+  .skill-detail-panel,
+  .legend {
+    backdrop-filter: none !important;
+    background: rgba(15, 23, 42, 0.95) !important; /* Use solid background instead */
+  }
+  
+  /* Keep only essential animations with reduced complexity */
+  .enhanced-skill-node {
+    animation: none !important; /* Disable node appear animation */
+  }
+  
+  .skill-detail-panel {
+    animation: none !important; /* Disable detail appear animation */
+  }
 }
 
 @media (max-width: 768px) {
