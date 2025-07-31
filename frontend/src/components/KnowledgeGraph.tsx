@@ -47,65 +47,73 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
   const [selectedPath] = useState<string | null>(null);
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
   const [expandedListItems, setExpandedListItems] = useState<Set<string>>(new Set());
-  const [viewBox] = useState({ x: 0, y: 0, width: 1200, height: 800 });
+  const [viewBox, setViewBox] = useState({ x: 0, y: 0, width: 1200, height: 800 });
+  const [isPanning, setIsPanning] = useState(false);
+  const [lastPanPoint, setLastPanPoint] = useState({ x: 0, y: 0 });
 
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
 
-  // Create learning paths for journey layout
+  // Create learning paths for journey layout with better alignment
   const createLearningPaths = useCallback(() => {
     const paths = {
       'foundation': {
         color: '#4ecdc4',
         curve: (t: number) => ({
-          x: 100 + t * 1000,
-          y: 400 + Math.sin(t * Math.PI * 0.5) * 100
+          x: 150 + t * 900,
+          y: 500 + Math.sin(t * Math.PI * 0.3) * 60
         })
       },
       'core': {
         color: '#45b7d1', 
         curve: (t: number) => ({
-          x: 150 + t * 900,
-          y: 300 + Math.sin(t * Math.PI * 0.7) * 80
+          x: 200 + t * 800,
+          y: 400 + Math.sin(t * Math.PI * 0.4) * 50
         })
       },
       'advanced': {
         color: '#96ceb4',
         curve: (t: number) => ({
-          x: 200 + t * 800,
-          y: 200 + Math.sin(t * Math.PI * 0.8) * 60
+          x: 250 + t * 700,
+          y: 300 + Math.sin(t * Math.PI * 0.5) * 40
         })
       },
       'mastery': {
         color: '#feca57',
         curve: (t: number) => ({
-          x: 250 + t * 700,
-          y: 150 + Math.sin(t * Math.PI * 0.9) * 40
+          x: 300 + t * 600,
+          y: 200 + Math.sin(t * Math.PI * 0.6) * 30
         })
       },
       'expert': {
         color: '#ff6b6b',
         curve: (t: number) => ({
-          x: 300 + t * 600,
-          y: 100 + Math.sin(t * Math.PI) * 30
+          x: 350 + t * 500,
+          y: 100 + Math.sin(t * Math.PI * 0.7) * 20
         })
       }
     };
     return paths;
   }, []);
 
-  // Create expanded lesson nodes along a mini-path
+  // Create expanded lesson nodes with improved hierarchy
   const createSubNodes = useCallback((parentNode: GraphNode): GraphNode[] => {
     const subNodes: GraphNode[] = [];
-    const maxSubnodes = 4;
+    const maxSubnodes = 3; // Reduced from 4 to 3 for less clutter
     const lessonsToShow = parentNode.lessons.slice(0, maxSubnodes);
     
+    // Create nodes in a more structured layout
     lessonsToShow.forEach((lesson, index) => {
-      const offsetX = (index * 80) - ((lessonsToShow.length - 1) * 40);
+      // Use a curved arc below parent for better visual hierarchy
+      const angle = (index - (lessonsToShow.length - 1) / 2) * 0.4; // Smaller spread
+      const radius = 120; // Distance from parent
+      const offsetX = Math.sin(angle) * radius;
+      const offsetY = Math.cos(angle) * 60 + 80; // Closer to parent
+      
       const subNode: GraphNode = {
         id: `${parentNode.id}-lesson-${lesson.id}`,
-        title: lesson.title,
+        title: lesson.title.length > 15 ? lesson.title.substring(0, 15) + '...' : lesson.title,
         track: lesson.track,
         icon: completedLessons.has(lesson.id) ? '✅' : '📚',
         description: lesson.description || `Lesson: ${lesson.title}`,
@@ -121,7 +129,7 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
         connections: [],
         position: {
           x: parentNode.position.x + offsetX,
-          y: parentNode.position.y + 100
+          y: parentNode.position.y + offsetY
         },
         pathIndex: -1,
         trackName: parentNode.trackName
@@ -129,7 +137,8 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
       subNodes.push(subNode);
     });
     
-    if (parentNode.lessons.length > maxSubnodes) {
+    // Only show "more" indicator if there are significantly more lessons
+    if (parentNode.lessons.length > maxSubnodes + 2) {
       const moreNode: GraphNode = {
         id: `${parentNode.id}-more`,
         title: `+${parentNode.lessons.length - maxSubnodes}`,
@@ -147,8 +156,8 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
         skillPoints: 0,
         connections: [],
         position: {
-          x: parentNode.position.x + (maxSubnodes * 40),
-          y: parentNode.position.y + 100
+          x: parentNode.position.x,
+          y: parentNode.position.y + 160 // Below the arc
         },
         pathIndex: -1,
         trackName: parentNode.trackName
@@ -279,7 +288,7 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
         icon: '🤖',
         description: 'PyTorch, neural networks, and machine learning fundamentals.',
         prerequisites: ['algorithms-intro', 'numpy-pandas'],
-        lessons: lessons.filter(l => l.track === 'ai-ml' && l.id >= 101 && l.id <= 120),
+        lessons: lessons.filter(l => l.track === 'ai-ml' && l.id >= 101 && l.id <= 204),
         depth: 'advanced',
         category: 'theoretical',
         unlocked: false,
@@ -301,7 +310,7 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
         icon: '🧠',
         description: 'Advanced neural networks, CNNs, RNNs, and Transformers.',
         prerequisites: ['ml-basics'],
-        lessons: lessons.filter(l => l.track === 'ai-ml' && l.id >= 121 && l.id <= 140),
+        lessons: lessons.filter(l => l.track === 'ai-ml' && l.id >= 301 && l.id <= 402),
         depth: 'mastery',
         category: 'theoretical',
         unlocked: false,
@@ -323,7 +332,7 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
         icon: '🚀',
         description: 'Build and fine-tune large language models like GPT.',
         prerequisites: ['deep-learning'],
-        lessons: lessons.filter(l => l.track === 'ai-ml' && l.id >= 141),
+        lessons: lessons.filter(l => l.track === 'ai-ml' && l.id >= 501),
         depth: 'expert',
         category: 'project',
         unlocked: false,
@@ -399,6 +408,70 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
     
     return `M ${from.position.x} ${from.position.y} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${to.position.x} ${to.position.y}`;
   };
+
+  // Handle zoom and pan functionality
+  const handleWheel = useCallback((event: React.WheelEvent) => {
+    event.preventDefault();
+    const delta = event.deltaY > 0 ? 1.1 : 0.9;
+    const rect = svgRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+    
+    // Convert mouse position to SVG coordinates
+    const svgX = viewBox.x + (mouseX / rect.width) * viewBox.width;
+    const svgY = viewBox.y + (mouseY / rect.height) * viewBox.height;
+    
+    setViewBox(prev => {
+      const newWidth = Math.max(400, Math.min(3000, prev.width * delta));
+      const newHeight = Math.max(300, Math.min(2250, prev.height * delta));
+      
+      // Zoom toward mouse position
+      const newX = svgX - (mouseX / rect.width) * newWidth;
+      const newY = svgY - (mouseY / rect.height) * newHeight;
+      
+      return { x: newX, y: newY, width: newWidth, height: newHeight };
+    });
+  }, [viewBox]);
+  
+  const handleMouseDown = useCallback((event: React.MouseEvent) => {
+    if (event.button === 0) { // Left mouse button
+      setIsPanning(true);
+      setLastPanPoint({ x: event.clientX, y: event.clientY });
+    }
+  }, []);
+  
+  const handleMouseMove = useCallback((event: React.MouseEvent) => {
+    if (isPanning) {
+      const deltaX = event.clientX - lastPanPoint.x;
+      const deltaY = event.clientY - lastPanPoint.y;
+      
+      const rect = svgRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      
+      // Convert pixel movement to SVG coordinate movement
+      const svgDeltaX = -(deltaX / rect.width) * viewBox.width;
+      const svgDeltaY = -(deltaY / rect.height) * viewBox.height;
+      
+      setViewBox(prev => ({
+        ...prev,
+        x: prev.x + svgDeltaX,
+        y: prev.y + svgDeltaY
+      }));
+      
+      setLastPanPoint({ x: event.clientX, y: event.clientY });
+    }
+  }, [isPanning, lastPanPoint, viewBox]);
+  
+  const handleMouseUp = useCallback(() => {
+    setIsPanning(false);
+  }, []);
+  
+  // Reset view to center
+  const resetView = useCallback(() => {
+    setViewBox({ x: 0, y: 0, width: 1200, height: 800 });
+  }, []);
 
   // Handle node interactions
   const handleNodeClick = (node: GraphNode, event: React.MouseEvent) => {
@@ -491,6 +564,31 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
           >
             📋 List
           </button>
+          {viewMode === 'graph' && (
+            <>
+              <button 
+                className="view-btn zoom-btn"
+                onClick={() => setViewBox(prev => ({ ...prev, width: prev.width * 0.8, height: prev.height * 0.8 }))}
+                title="Zoom In"
+              >
+                🔍+
+              </button>
+              <button 
+                className="view-btn zoom-btn"
+                onClick={() => setViewBox(prev => ({ ...prev, width: prev.width * 1.25, height: prev.height * 1.25 }))}
+                title="Zoom Out"
+              >
+                🔍-
+              </button>
+              <button 
+                className="view-btn reset-btn"
+                onClick={resetView}
+                title="Reset View"
+              >
+                🏠
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -500,6 +598,12 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
             ref={svgRef}
             className="knowledge-graph-svg"
             viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`}
+            onWheel={handleWheel}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            style={{ cursor: isPanning ? 'grabbing' : 'grab' }}
           >
           {/* SVG Definitions for gradients and effects */}
           <defs>
@@ -550,6 +654,28 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
             )}
           </g>
           
+          {/* Expansion Lines - Connect parent to subnodes */}
+          <g className="expansion-lines">
+            {filteredNodes.filter(node => node.id.includes('-lesson-') || node.id.includes('-more')).map(subNode => {
+              const parentId = subNode.id.split('-lesson-')[0].split('-more')[0];
+              const parentNode = nodes.find(n => n.id === parentId);
+              if (!parentNode) return null;
+              
+              return (
+                <line
+                  key={`expansion-${subNode.id}`}
+                  x1={parentNode.position.x}
+                  y1={parentNode.position.y}
+                  x2={subNode.position.x}
+                  y2={subNode.position.y}
+                  stroke="rgba(255, 255, 255, 0.3)"
+                  strokeWidth="1"
+                  strokeDasharray="3,3"
+                />
+              );
+            })}
+          </g>
+          
           {/* Track Background Paths */}
           <g className="track-backgrounds">
             {Object.entries(createLearningPaths()).map(([trackName, pathData]) => {
@@ -595,7 +721,7 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
                 <circle
                   cx={node.position.x}
                   cy={node.position.y}
-                  r={node.id.includes('-lesson-') || node.id.includes('-more') ? 15 : (30 + (node.mastery * 0.2))}
+                  r={node.id.includes('-lesson-') ? 12 : node.id.includes('-more') ? 10 : (28 + Math.min(node.mastery * 0.15, 8))}
                   className={`skill-node depth-${node.depth} category-${node.category} journey-node ${node.unlocked ? 'unlocked' : 'locked'} ${node.progress === 100 ? 'completed' : ''}`}
                   fill={node.unlocked ? undefined : '#ccc'}
                   stroke={selectedNode?.id === node.id ? '#333' : '#fff'}
