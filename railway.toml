@@ -1,10 +1,15 @@
+# railway.toml
+
+# General build settings
+[build]
+builder = "nixpacks"
+
+# Configuration for the Backend Service
 [[services]]
 name = "backend"
 source = "backend"
 
-[services.build]
-builder = "nixpacks"
-
 [services.deploy]
 startCommand = "uvicorn main:app --host 0.0.0.0 --port $PORT"
 healthcheckPath = "/health"
+healthcheckTimeout = 300
