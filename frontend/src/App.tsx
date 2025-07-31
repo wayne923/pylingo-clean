@@ -350,20 +350,22 @@ function App() {
           />
         </div>
         <div className="lesson-content">
-          {currentLesson.type === 'challenge' ? (
+          {currentLesson && currentLesson.type === 'challenge' ? (
             <ChallengeLesson 
               key={currentLesson.id}
               lesson={currentLesson}
               onComplete={() => handleLessonComplete(currentLesson.id)}
               isCompleted={completedLessons.has(currentLesson.id)}
             />
-          ) : (
+          ) : currentLesson ? (
             <Lesson 
               key={currentLesson.id}
               lesson={currentLesson}
               onComplete={() => handleLessonComplete(currentLesson.id)}
               isCompleted={completedLessons.has(currentLesson.id)}
             />
+          ) : (
+            <div>Loading lesson...</div>
           )}
         </div>
       </main>

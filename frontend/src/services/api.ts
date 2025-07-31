@@ -23,6 +23,7 @@ export interface ApiLesson {
   concepts: string[];
   track: string;
   difficulty: 'beginner' | 'intermediate' | 'advanced';
+  type?: 'tutorial' | 'challenge';
 }
 
 export const apiService = {
