@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Lesson } from '../data/lessons';
 import { ApiLesson } from '../services/api';
-import { testRunnerService, TestSuiteResult } from '../services/testRunner';
+import { TestSuiteResult } from '../services/testRunner';
 import { usePyodide } from '../hooks/usePyodide';
 import Editor from '@monaco-editor/react';
 import './ChallengeLesson.css';
