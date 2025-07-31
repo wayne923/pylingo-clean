@@ -41,75 +41,75 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
 }) => {
   const [nodes, setNodes] = useState<GraphNode[]>([]);
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
-  const [, setHoveredNode] = useState<GraphNode | null>(null);
   const [viewMode, setViewMode] = useState<'graph' | 'list'>('graph');
   const [searchQuery] = useState('');
   const [selectedPath] = useState<string | null>(null);
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
   const [expandedListItems, setExpandedListItems] = useState<Set<string>>(new Set());
-  const [viewBox, setViewBox] = useState({ x: 0, y: 0, width: 1200, height: 800 });
+  const [viewBox, setViewBox] = useState({ x: 0, y: 0, width: 1600, height: 1000 });
   const [isPanning, setIsPanning] = useState(false);
   const [lastPanPoint, setLastPanPoint] = useState({ x: 0, y: 0 });
+  const [hoveredNode, setHoveredNode] = useState<GraphNode | null>(null);
 
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
 
-  // Create learning paths for journey layout with better alignment
+  // Create learning paths with more spacing for expansions
   const createLearningPaths = useCallback(() => {
     const paths = {
       'foundation': {
         color: '#4ecdc4',
         curve: (t: number) => ({
-          x: 150 + t * 900,
-          y: 500 + Math.sin(t * Math.PI * 0.3) * 60
+          x: 200 + t * 1200, // Increased spacing
+          y: 600 + Math.sin(t * Math.PI * 0.3) * 80
         })
       },
       'core': {
         color: '#45b7d1', 
         curve: (t: number) => ({
-          x: 200 + t * 800,
-          y: 400 + Math.sin(t * Math.PI * 0.4) * 50
+          x: 250 + t * 1100,
+          y: 450 + Math.sin(t * Math.PI * 0.4) * 70
         })
       },
       'advanced': {
         color: '#96ceb4',
         curve: (t: number) => ({
-          x: 250 + t * 700,
-          y: 300 + Math.sin(t * Math.PI * 0.5) * 40
+          x: 300 + t * 1000,
+          y: 300 + Math.sin(t * Math.PI * 0.5) * 60
         })
       },
       'mastery': {
         color: '#feca57',
         curve: (t: number) => ({
-          x: 300 + t * 600,
-          y: 200 + Math.sin(t * Math.PI * 0.6) * 30
+          x: 350 + t * 900,
+          y: 200 + Math.sin(t * Math.PI * 0.6) * 50
         })
       },
       'expert': {
         color: '#ff6b6b',
         curve: (t: number) => ({
-          x: 350 + t * 500,
-          y: 100 + Math.sin(t * Math.PI * 0.7) * 20
+          x: 400 + t * 800,
+          y: 100 + Math.sin(t * Math.PI * 0.7) * 40
         })
       }
     };
     return paths;
   }, []);
 
-  // Create expanded lesson nodes with improved hierarchy
+  // Create expanded lesson nodes with improved hierarchy and more space
   const createSubNodes = useCallback((parentNode: GraphNode): GraphNode[] => {
     const subNodes: GraphNode[] = [];
     const maxSubnodes = 3; // Reduced from 4 to 3 for less clutter
     const lessonsToShow = parentNode.lessons.slice(0, maxSubnodes);
     
-    // Create nodes in a more structured layout
+    // Create nodes in a more structured layout with better spacing
     lessonsToShow.forEach((lesson, index) => {
       // Use a curved arc below parent for better visual hierarchy
-      const angle = (index - (lessonsToShow.length - 1) / 2) * 0.4; // Smaller spread
-      const radius = 120; // Distance from parent
+      const angle = (index - (lessonsToShow.length - 1) / 2) * 0.5; // Slightly wider spread
+      const radius = 160; // Increased distance from parent
       const offsetX = Math.sin(angle) * radius;
-      const offsetY = Math.cos(angle) * 60 + 80; // Closer to parent
+      const offsetY = Math.cos(angle) * 80 + 120; // More space below parent
       
       const subNode: GraphNode = {
         id: `${parentNode.id}-lesson-${lesson.id}`,
@@ -157,7 +157,7 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
         connections: [],
         position: {
           x: parentNode.position.x,
-          y: parentNode.position.y + 160 // Below the arc
+          y: parentNode.position.y + 220 // More space below the arc
         },
         pathIndex: -1,
         trackName: parentNode.trackName
@@ -470,7 +470,7 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
   
   // Reset view to center
   const resetView = useCallback(() => {
-    setViewBox({ x: 0, y: 0, width: 1200, height: 800 });
+    setViewBox({ x: 0, y: 0, width: 1600, height: 1000 });
   }, []);
 
   // Handle node interactions
@@ -638,16 +638,19 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
                 const connectedNode = nodes.find(n => n.id === connId);
                 if (!connectedNode || node.id.includes('-lesson-')) return null;
                 
+                // Add glow effect when hovering nearby nodes
+                const isNearHovered = hoveredNode && (hoveredNode.id === node.id || hoveredNode.id === connId);
+                
                 return (
                   <path
                     key={`path-${node.id}-${connId}`}
                     d={generateConnectionPath(node, connectedNode)}
-                    className={`journey-connection ${selectedPath ? 'dimmed' : ''}`}
+                    className={`journey-connection ${selectedPath ? 'dimmed' : ''} ${isNearHovered ? 'active' : ''}`}
                     stroke={node.unlocked && connectedNode.unlocked ? '#4ecdc4' : '#ddd'}
-                    strokeWidth="3"
+                    strokeWidth={isNearHovered ? "4" : "3"}
                     strokeDasharray={connectedNode.unlocked ? '0' : '8,4'}
                     fill="none"
-                    opacity={node.unlocked ? 0.8 : 0.3}
+                    opacity={node.unlocked ? (isNearHovered ? 1 : 0.8) : 0.3}
                   />
                 );
               })
@@ -730,13 +733,17 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
                   opacity={node.id.includes('-lesson-') || node.id.includes('-more') ? 0.7 : 1}
                 />
                 
-                {/* Node icon */}
+                {/* Node icon with hover effects */}
                 <text
                   x={node.position.x}
                   y={node.position.y + 5}
                   textAnchor="middle"
-                  className="node-icon"
+                  className={`node-icon ${hoveredNode?.id === node.id ? 'hovered' : ''}`}
                   pointerEvents="none"
+                  style={{
+                    fontSize: hoveredNode?.id === node.id ? '1.8rem' : '1.5rem',
+                    transition: 'font-size 0.3s ease'
+                  }}
                 >
                   {node.icon}
                 </text>
