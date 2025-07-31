@@ -94,10 +94,12 @@ function App() {
       setUser(authenticatedUser);
     }
     
-    // Update user level based on assessment results
+    // Update user level and set appropriate track based on assessment results
     const userData = localStorage.getItem('userPreferences');
     if (userData) {
       const preferences = JSON.parse(userData);
+      
+      // Set user level display
       if (preferences.skillLevel === 'advanced') {
         setUserLevel('Expert');
       } else if (preferences.skillLevel === 'intermediate') {
@@ -105,7 +107,48 @@ function App() {
       } else {
         setUserLevel('Beginner');
       }
+      
+      // Determine the best track and starting lesson based on goals and skill level
+      const { track, lessonId } = getRecommendedTrackAndLesson(preferences);
+      setSelectedTrack(track);
+      setCurrentLessonId(lessonId);
+      
+      console.log(`Set track to "${track}" starting at lesson ${lessonId} based on:`, {
+        skillLevel: preferences.skillLevel,
+        goals: preferences.goals,
+        experience: preferences.experience
+      });
     }
+  };
+
+  const getRecommendedTrackAndLesson = (preferences: any) => {
+    const { skillLevel, goals, experience } = preferences;
+    
+    // Priority order for track selection based on goals
+    if (goals.includes('ai-ml')) {
+      return { track: 'ai-ml', lessonId: 101 }; // Start with PyTorch basics
+    }
+    
+    if (goals.includes('data-science')) {
+      return { track: 'data-science', lessonId: 13 }; // Start with NumPy
+    }
+    
+    if (goals.includes('web-dev')) {
+      return { track: 'web-development', lessonId: 21 }; // Start with Flask
+    }
+    
+    // For other goals or mixed goals, choose based on skill level
+    if (skillLevel === 'advanced') {
+      // Advanced users might want to start with intermediate content
+      return { track: 'intermediate', lessonId: 8 };
+    }
+    
+    if (skillLevel === 'intermediate') {
+      return { track: 'intermediate', lessonId: 8 };
+    }
+    
+    // Default to beginner track for new learners
+    return { track: 'beginner', lessonId: 1 };
   };
 
   // Check authentication on load
@@ -115,16 +158,32 @@ function App() {
       setUser(currentUser);
       setShowLandingPage(false); // Hide landing page if already logged in
       
-      // Load user preferences for level
+      // Load user preferences for level and track selection
       const userData = localStorage.getItem('userPreferences');
       if (userData) {
-        const preferences = JSON.parse(userData);
-        if (preferences.skillLevel === 'advanced') {
-          setUserLevel('Expert');
-        } else if (preferences.skillLevel === 'intermediate') {
-          setUserLevel('Intermediate');
-        } else {
-          setUserLevel('Beginner');
+        try {
+          const preferences = JSON.parse(userData);
+          
+          // Set user level
+          if (preferences.skillLevel === 'advanced') {
+            setUserLevel('Expert');
+          } else if (preferences.skillLevel === 'intermediate') {
+            setUserLevel('Intermediate');
+          } else {
+            setUserLevel('Beginner');
+          }
+          
+          // Set appropriate track and lesson based on preferences
+          const { track, lessonId } = getRecommendedTrackAndLesson(preferences);
+          setSelectedTrack(track);
+          setCurrentLessonId(lessonId);
+          
+          console.log(`Loaded track "${track}" starting at lesson ${lessonId} from saved preferences`);
+        } catch (error) {
+          console.error('Error loading user preferences:', error);
+          // Fall back to beginner track
+          setSelectedTrack('beginner');
+          setCurrentLessonId(1);
         }
       }
     }
