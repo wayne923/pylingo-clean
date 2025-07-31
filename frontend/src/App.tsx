@@ -354,8 +354,7 @@ function App() {
             <ChallengeLesson 
               key={currentLesson.id}
               lesson={currentLesson}
-              onComplete={() => handleLessonComplete(currentLesson.id)}
-              isCompleted={completedLessons.has(currentLesson.id)}
+              onComplete={handleLessonComplete}
             />
           ) : currentLesson ? (
             <Lesson 

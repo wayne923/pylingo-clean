@@ -7,6 +7,13 @@ export interface Track {
   difficulty: string;
 }
 
+export interface TestCase {
+  input: any;
+  expectedOutput: any;
+  description: string;
+  hidden?: boolean;
+}
+
 export interface ApiLesson {
   id: number;
   title: string;
@@ -24,6 +31,17 @@ export interface ApiLesson {
   track: string;
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   type?: 'tutorial' | 'challenge';
+  // Challenge-specific properties
+  testCases?: TestCase[];
+  functionName?: string;
+  timeLimit?: number;
+  memoryLimit?: number;
+  constraints?: string[];
+  examples?: {
+    input: string;
+    output: string;
+    explanation?: string;
+  }[];
 }
 
 export const apiService = {

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Lesson, TestCase } from '../data/lessons';
+import { ApiLesson } from '../services/api';
 import { testRunnerService, TestSuiteResult } from '../services/testRunner';
 import Editor from '@monaco-editor/react';
 import './ChallengeLesson.css';
 
 interface ChallengeLessonProps {
-  lesson: Lesson;
+  lesson: Lesson | ApiLesson;
   onComplete: (lessonId: number) => void;
 }
 
