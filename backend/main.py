@@ -369,6 +369,42 @@ async def health_check():
     """Health check endpoint for load balancers"""
     return {"status": "healthy", "timestamp": datetime.utcnow()}
 
+@app.get("/api/admin/database-info")
+async def get_database_info(db: Session = Depends(get_db)):
+    """Simple admin endpoint to view database contents"""
+    try:
+        # Count users
+        user_count = db.query(User).count()
+        users = db.query(User).limit(10).all()
+        
+        # Count lessons and tracks
+        lesson_count = db.query(Lesson).count()
+        track_count = db.query(Track).count()
+        
+        # Count progress entries
+        progress_count = db.query(UserProgress).count()
+        
+        return {
+            "database_type": "SQLite" if "sqlite" in str(db.bind.url) else "PostgreSQL",
+            "stats": {
+                "users": user_count,
+                "lessons": lesson_count,
+                "tracks": track_count,
+                "user_progress": progress_count
+            },
+            "recent_users": [
+                {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                    "created_at": user.created_at,
+                    "is_active": user.is_active
+                } for user in users
+            ]
+        }
+    except Exception as e:
+        return {"error": str(e), "database_type": "Unknown"}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
