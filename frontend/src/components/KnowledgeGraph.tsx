@@ -32,14 +32,6 @@ interface GraphNode {
   fixed?: boolean;
 }
 
-interface LearningPath {
-  id: string;
-  name: string;
-  description: string;
-  color: string;
-  nodes: string[];
-  estimatedWeeks: number;
-}
 
 const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
   userPreferences,
@@ -49,53 +41,18 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
 }) => {
   const [nodes, setNodes] = useState<GraphNode[]>([]);
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
-  const [hoveredNode, setHoveredNode] = useState<GraphNode | null>(null);
+  const [, setHoveredNode] = useState<GraphNode | null>(null);
   const [viewMode, setViewMode] = useState<'graph' | 'list'>('graph');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedPath, setSelectedPath] = useState<string | null>(null);
+  const [searchQuery] = useState('');
+  const [selectedPath] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragNode, setDragNode] = useState<GraphNode | null>(null);
-  const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 });
+  const [transform] = useState({ x: 0, y: 0, scale: 1 });
 
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number | null>(null);
 
-  // Learning paths for different goals
-  const learningPaths: LearningPath[] = [
-    {
-      id: 'beginner-path',
-      name: 'Python Foundations',
-      description: 'Start your Python journey from scratch',
-      color: '#4ecdc4',
-      nodes: ['python-basics', 'data-structures', 'algorithms-intro', 'functions-advanced'],
-      estimatedWeeks: 8
-    },
-    {
-      id: 'data-science-path',
-      name: 'Data Science Track',
-      description: 'Master data analysis and machine learning',
-      color: '#45b7d1',
-      nodes: ['python-basics', 'data-structures', 'numpy-pandas', 'data-analysis', 'ml-basics'],
-      estimatedWeeks: 16
-    },
-    {
-      id: 'web-dev-path',
-      name: 'Web Development',
-      description: 'Build modern web applications',
-      color: '#96ceb4',
-      nodes: ['python-basics', 'web-basics', 'flask-django', 'databases', 'deployment'],
-      estimatedWeeks: 12
-    },
-    {
-      id: 'ai-path',
-      name: 'AI & Machine Learning',
-      description: 'Deep dive into artificial intelligence',
-      color: '#feca57',
-      nodes: ['python-basics', 'algorithms-intro', 'ml-basics', 'deep-learning', 'llm-mastery'],
-      estimatedWeeks: 20
-    }
-  ];
 
   // Create knowledge graph nodes
   const createGraphNodes = useCallback((): GraphNode[] => {
@@ -343,7 +300,6 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
           if (connected) {
             const dx = connected.position.x - node.position.x;
             const dy = connected.position.y - node.position.y;
-            const distance = Math.sqrt(dx * dx + dy * dy) || 1;
             
             fx += dx * attraction;
             fy += dy * attraction;
