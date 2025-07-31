@@ -45,6 +45,9 @@ const EnhancedSkillTree: React.FC<EnhancedSkillTreeProps> = ({
   onStartLesson,
   lessons
 }) => {
+  // Debug logging
+  console.log('🌌 EnhancedSkillTree rendering!', { lessons: lessons.length, completedLessons: completedLessons.size });
+  
   const [selectedNode, setSelectedNode] = useState<SkillNode | null>(null);
   const [hoveredNode, setHoveredNode] = useState<SkillNode | null>(null);
   const [viewMode, setViewMode] = useState<'tree' | 'constellation' | 'roadmap' | 'focus'>('constellation');
@@ -456,6 +459,11 @@ const EnhancedSkillTree: React.FC<EnhancedSkillTreeProps> = ({
 
   return (
     <div className="enhanced-skill-tree" ref={containerRef}>
+      {/* Debug Indicator */}
+      <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'lime', color: 'black', padding: '5px', fontSize: '12px', zIndex: 9999 }}>
+        ENHANCED SKILL TREE ACTIVE
+      </div>
+      
       {/* Header Controls */}
       <div className="skill-tree-header">
         <div className="header-left">
