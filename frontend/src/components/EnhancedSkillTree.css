@@ -1277,3 +1277,138 @@
     font-size: 2rem;
   }
 }
+
+/* Interactive Knowledge Graph Features */
+.enhanced-skill-node {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+/* Prerequisite relationship highlighting */
+.enhanced-skill-node.prerequisite-source {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(34, 197, 94, 0.4);
+  border: 3px solid #10b981 !important;
+  z-index: 10;
+}
+
+.enhanced-skill-node.prerequisite-source::after {
+  content: "📚 Prerequisite";
+  position: absolute;
+  top: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #10b981;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: bold;
+  white-space: nowrap;
+  opacity: 0;
+  animation: fadeInUp 0.3s ease-out 0.2s forwards;
+}
+
+.enhanced-skill-node.prerequisite-target {
+  transform: translateY(-6px) scale(1.05);
+  box-shadow: 0 12px 30px rgba(59, 130, 246, 0.5);
+  border: 3px solid #3b82f6 !important;
+  z-index: 15;
+}
+
+.enhanced-skill-node.prerequisite-target::after {
+  content: "🎯 Selected";
+  position: absolute;
+  top: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #3b82f6;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: bold;
+  white-space: nowrap;
+  opacity: 0;
+  animation: fadeInUp 0.3s ease-out 0.1s forwards;
+}
+
+.enhanced-skill-node.connected {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.3);
+  border: 2px solid #a855f7 !important;
+  z-index: 8;
+}
+
+.enhanced-skill-node.connected::after {
+  content: "🔗 Related";
+  position: absolute;
+  top: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #a855f7;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: bold;
+  white-space: nowrap;
+  opacity: 0;
+  animation: fadeInUp 0.3s ease-out 0.3s forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Dim non-related nodes when highlighting is active */
+.enhanced-skill-tree:has(.prerequisite-source) .enhanced-skill-node:not(.prerequisite-source):not(.prerequisite-target):not(.connected) {
+  opacity: 0.3;
+  filter: grayscale(50%);
+  transform: scale(0.95);
+}
+
+/* Enhanced hover effects for better interactivity */
+.enhanced-skill-node:hover {
+  transform: translateY(-3px) scale(1.02);
+  z-index: 20;
+  cursor: pointer;
+}
+
+.enhanced-skill-node:hover .node-glow {
+  opacity: 0.6;
+  transform: scale(1.1);
+}
+
+/* Add visual connections with pseudo-elements */
+.enhanced-skill-node.prerequisite-source::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -20px;
+  width: 40px;
+  height: 3px;
+  background: linear-gradient(90deg, #10b981, transparent);
+  border-radius: 2px;
+  z-index: -1;
+  opacity: 0;
+  animation: drawConnection 0.5s ease-out 0.4s forwards;
+}
+
+@keyframes drawConnection {
+  from {
+    width: 0;
+    opacity: 0;
+  }
+  to {
+    width: 40px;
+    opacity: 0.8;
+  }
+}

@@ -404,6 +404,39 @@ const EnhancedSkillTree: React.FC<EnhancedSkillTreeProps> = ({
     if (viewMode === 'focus') {
       setCenterNode(node.id);
     }
+    
+    // Highlight prerequisite connections when node is selected
+    highlightPrerequisiteConnections(node);
+  };
+
+  const highlightPrerequisiteConnections = (node: SkillNode) => {
+    // Add visual highlighting for prerequisite relationships
+    const allNodes = document.querySelectorAll('.enhanced-skill-node');
+    allNodes.forEach(nodeEl => {
+      nodeEl.classList.remove('prerequisite-source', 'prerequisite-target', 'connected');
+    });
+
+    // Highlight prerequisites (sources)
+    node.prerequisites.forEach(prereqId => {
+      const prereqNode = document.querySelector(`[data-node-id="${prereqId}"]`);
+      if (prereqNode) {
+        prereqNode.classList.add('prerequisite-source');
+      }
+    });
+
+    // Highlight connections
+    node.connections.forEach(connId => {
+      const connNode = document.querySelector(`[data-node-id="${connId}"]`);
+      if (connNode) {
+        connNode.classList.add('connected');
+      }
+    });
+
+    // Highlight the selected node as target
+    const selectedNodeEl = document.querySelector(`[data-node-id="${node.id}"]`);
+    if (selectedNodeEl) {
+      selectedNodeEl.classList.add('prerequisite-target');
+    }
   };
 
   // Touch event handlers for mobile support
@@ -452,6 +485,7 @@ const EnhancedSkillTree: React.FC<EnhancedSkillTreeProps> = ({
     return (
       <div
         key={node.id}
+        data-node-id={node.id}
         className={`enhanced-skill-node ${node.depth} ${node.category} ${node.unlocked ? 'unlocked' : 'locked'} ${isSelected ? 'selected' : ''} ${isHovered ? 'hovered' : ''} ${isInPath ? 'in-path' : ''}`}
         style={{
           '--node-color': getNodeColor(node),
