@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Lesson, TestCase } from '../data/lessons';
 import { testRunnerService, TestSuiteResult } from '../services/testRunner';
-import CodeEditor from './CodeEditor';
+import Editor from '@monaco-editor/react';
 import './ChallengeLesson.css';
 
 interface ChallengeLessonProps {
@@ -202,11 +202,22 @@ const ChallengeLesson: React.FC<ChallengeLessonProps> = ({ lesson, onComplete })
               </button>
             </div>
             
-            <CodeEditor
-              value={code}
-              onChange={setCode}
-              language="python"
+            <Editor
               height="400px"
+              defaultLanguage="python"
+              value={code}
+              onChange={(value) => setCode(value || '')}
+              theme="vs-dark"
+              options={{
+                minimap: { enabled: false },
+                fontSize: 14,
+                lineNumbers: 'on',
+                wordWrap: 'on',
+                automaticLayout: true,
+                scrollBeyondLastLine: false,
+                tabSize: 4,
+                insertSpaces: true,
+              }}
             />
           </div>
 
