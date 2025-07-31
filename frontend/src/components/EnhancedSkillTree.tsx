@@ -50,7 +50,7 @@ const EnhancedSkillTree: React.FC<EnhancedSkillTreeProps> = ({
   
   const [selectedNode, setSelectedNode] = useState<SkillNode | null>(null);
   const [hoveredNode, setHoveredNode] = useState<SkillNode | null>(null);
-  const [viewMode, setViewMode] = useState<'tree' | 'constellation' | 'roadmap' | 'focus'>('constellation');
+  const [viewMode, setViewMode] = useState<'tree' | 'constellation' | 'roadmap' | 'focus' | 'mobile'>('constellation');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -58,6 +58,20 @@ const EnhancedSkillTree: React.FC<EnhancedSkillTreeProps> = ({
   
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Auto-switch to mobile view on small screens
+  React.useEffect(() => {
+    const checkScreenSize = () => {
+      const isMobile = window.innerWidth <= 768;
+      if (isMobile && viewMode !== 'mobile') {
+        setViewMode('mobile');
+      }
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, [viewMode]);
 
   // Create enhanced skill nodes with better categorization and relationships
   const createEnhancedSkillNodes = (): SkillNode[] => {
@@ -355,7 +369,7 @@ const EnhancedSkillTree: React.FC<EnhancedSkillTreeProps> = ({
   const skillNodes = createEnhancedSkillNodes();
   
   // Filter nodes based on search and selected path
-  const filteredNodes = skillNodes.filter(node => {
+  let filteredNodes = skillNodes.filter(node => {
     const matchesSearch = searchQuery === '' || 
       node.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       node.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -365,6 +379,25 @@ const EnhancedSkillTree: React.FC<EnhancedSkillTreeProps> = ({
     
     return matchesSearch && matchesPath;
   });
+
+  // In mobile view, prioritize and limit nodes for better performance and UX
+  if (viewMode === 'mobile') {
+    // Sort by priority: unlocked with progress > unlocked > locked, then by progress
+    filteredNodes = filteredNodes
+      .sort((a, b) => {
+        const getNodePriority = (node: SkillNode) => {
+          if (node.unlocked && node.progress > 0) return 1; // Started nodes
+          if (node.unlocked) return 2; // Available to start
+          return 3; // Locked nodes
+        };
+        const priorityDiff = getNodePriority(a) - getNodePriority(b);
+        if (priorityDiff !== 0) return priorityDiff;
+        
+        // Within same priority, sort by progress (descending)
+        return b.progress - a.progress;
+      })
+      .slice(0, 20); // Limit to 20 most relevant nodes
+  }
 
   const handleNodeClick = (node: SkillNode) => {
     setSelectedNode(node);
@@ -519,7 +552,7 @@ const EnhancedSkillTree: React.FC<EnhancedSkillTreeProps> = ({
           
           {/* View Mode */}
           <div className="view-controls">
-            {['constellation', 'tree', 'roadmap', 'focus'].map(mode => (
+            {['constellation', 'tree', 'roadmap', 'focus', 'mobile'].map(mode => (
               <button
                 key={mode}
                 className={`view-btn ${viewMode === mode ? 'active' : ''}`}
@@ -530,7 +563,7 @@ const EnhancedSkillTree: React.FC<EnhancedSkillTreeProps> = ({
                 }}
                 title={`${mode.charAt(0).toUpperCase() + mode.slice(1)} View`}
               >
-                {mode === 'constellation' ? '🌌' : mode === 'tree' ? '🌳' : mode === 'roadmap' ? '🗺️' : '🎯'}
+                {mode === 'constellation' ? '🌌' : mode === 'tree' ? '🌳' : mode === 'roadmap' ? '🗺️' : mode === 'focus' ? '🎯' : '📱'}
               </button>
             ))}
           </div>
