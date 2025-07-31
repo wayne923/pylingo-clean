@@ -186,25 +186,65 @@ print(x.shape)`,
   };
 
   const completeOnboarding = async () => {
-    setIsLoading(true);
-    
-    // Save user preferences and assessment results
-    const userData = {
-      assessmentScore,
-      skillLevel: getSkillLevel(),
-      ...personalizeData
-    };
-    
-    // In a real app, you'd save this to the backend
-    localStorage.setItem('userPreferences', JSON.stringify(userData));
-    
-    setTimeout(() => {
+    try {
+      console.log('Starting onboarding completion...');
+      console.log('personalizeData:', personalizeData);
+      console.log('assessmentScore:', assessmentScore);
+      
+      setIsLoading(true);
+      
+      // Validate required data before proceeding
+      if (!personalizeData || typeof personalizeData !== 'object') {
+        throw new Error('Personalization data is invalid');
+      }
+      
+      if (personalizeData.goals.length === 0) {
+        throw new Error('No goals selected');
+      }
+      
+      // Save user preferences and assessment results
+      const skillLevel = getSkillLevel();
+      console.log('Calculated skill level:', skillLevel);
+      
+      const userData = {
+        assessmentScore,
+        skillLevel,
+        experience: personalizeData.experience,
+        goals: personalizeData.goals,
+        timeCommitment: personalizeData.timeCommitment,
+        preferredStyle: personalizeData.preferredStyle
+      };
+      
+      console.log('User data to save:', userData);
+      
+      // In a real app, you'd save this to the backend
+      localStorage.setItem('userPreferences', JSON.stringify(userData));
+      console.log('Data saved to localStorage');
+      
       setStep('complete');
+      console.log('Step set to complete');
+      
+      // Use a shorter timeout and add safety checks
       setTimeout(() => {
-        onSuccess();
-        onClose();
-      }, 2000);
-    }, 1000);
+        try {
+          console.log('Calling completion callbacks...');
+          if (typeof onSuccess === 'function') {
+            console.log('Calling onSuccess');
+            onSuccess();
+          }
+          if (typeof onClose === 'function') {
+            console.log('Calling onClose');
+            onClose();
+          }
+        } catch (error) {
+          console.error('Error in completion callbacks:', error);
+        }
+      }, 1500);
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
+      setError(`Failed to complete setup: ${error.message}`);
+      setIsLoading(false);
+    }
   };
 
   const getSkillLevel = () => {
@@ -397,15 +437,17 @@ print(x.shape)`,
               >
                 <div className="assessment-header">
                   <h2>Quick Skill Check</h2>
-                  <div className="progress-bar">
-                    <div 
-                      className="progress-fill"
-                      style={{ width: `${((currentQuestion + 1) / skillQuestions.length) * 100}%` }}
-                    />
+                  <div className="progress-container">
+                    <div className="progress-bar">
+                      <div 
+                        className="progress-fill"
+                        style={{ width: `${((currentQuestion + 1) / skillQuestions.length) * 100}%` }}
+                      />
+                    </div>
+                    <span className="progress-text">
+                      {currentQuestion + 1} of {skillQuestions.length}
+                    </span>
                   </div>
-                  <span className="progress-text">
-                    {currentQuestion + 1} of {skillQuestions.length}
-                  </span>
                 </div>
 
                 <div className="question-card">
@@ -542,6 +584,12 @@ print(x.shape)`,
                     ))}
                   </div>
                 </div>
+
+                {error && (
+                  <div className="error-message">
+                    {error}
+                  </div>
+                )}
 
                 <motion.button
                   className="primary-button"
