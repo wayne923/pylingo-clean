@@ -15,6 +15,7 @@ import Dashboard from './components/Dashboard';
 import { lessons } from './data/lessons';
 import { apiService, ApiLesson } from './services/api';
 import { authService, User } from './services/authService';
+import { gamificationService } from './services/gamificationService';
 
 function App() {
   const [currentLessonId, setCurrentLessonId] = useState(1001); // Start with first algorithms lesson
@@ -45,8 +46,24 @@ function App() {
     console.log('Total lessons:', currentLessons.length);
   }, [currentLessons, selectedTrack, useApi]);
 
-  const handleLessonComplete = (lessonId: number) => {
+  const handleLessonComplete = async (lessonId: number) => {
     setCompletedLessons(prev => new Set([...Array.from(prev), lessonId]));
+    
+    // Update streak for authenticated users
+    if (user) {
+      try {
+        const streakUpdate = await gamificationService.updateStreak();
+        console.log('Streak updated:', streakUpdate);
+        
+        // Show level up notification if applicable
+        if (streakUpdate.level_up && streakUpdate.new_level) {
+          // Could show a toast notification here
+          console.log(`🎉 Level up! Welcome to level ${streakUpdate.new_level}!`);
+        }
+      } catch (error) {
+        console.error('Failed to update streak:', error);
+      }
+    }
     
     // Auto-advance to next lesson if available in current track
     const nextLesson = filteredLessons.find(lesson => lesson.id === lessonId + 1);

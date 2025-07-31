@@ -3,8 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List
 from database import get_db, create_tables
-from models import Track, Lesson, UserProgress, User, UserPreferences
-from schemas import UserCreate, UserResponse, UserLogin, Token, UserProgressCreate, UserProgressResponse, LessonCreate, LessonResponse, UserPreferencesCreate, UserPreferencesUpdate, UserPreferencesResponse
+from models import Track, Lesson, UserProgress, User, UserPreferences, UserGamification, Achievement, UserAchievement
+from schemas import UserCreate, UserResponse, UserLogin, Token, UserProgressCreate, UserProgressResponse, LessonCreate, LessonResponse, UserPreferencesCreate, UserPreferencesUpdate, UserPreferencesResponse, UserGamificationResponse, AchievementResponse, UserAchievementResponse, StreakUpdateResponse
 from auth import authenticate_user, create_access_token, get_current_user, get_password_hash, get_user_by_username, get_user_by_email
 from docker_executor import docker_executor
 from datetime import timedelta, datetime
@@ -254,6 +254,119 @@ async def get_progress_stats(
         "current_streak": streak,
         "completion_percentage": (completed_lessons / total_lessons * 100) if total_lessons > 0 else 0
     }
+
+# Gamification endpoints
+@app.get("/api/user/gamification", response_model=UserGamificationResponse)
+async def get_user_gamification(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get user's gamification data (streaks, XP, level)"""
+    gamification = db.query(UserGamification).filter(
+        UserGamification.user_id == current_user.id
+    ).first()
+    
+    if not gamification:
+        # Create initial gamification record for user
+        gamification = UserGamification(
+            user_id=current_user.id,
+            current_streak=0,
+            longest_streak=0,
+            total_xp=0,
+            current_level=1,
+            streak_freeze_count=3  # Start with 3 streak freezes
+        )
+        db.add(gamification)
+        db.commit()
+        db.refresh(gamification)
+    
+    return gamification
+
+@app.post("/api/user/update-streak", response_model=StreakUpdateResponse)
+async def update_user_streak(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update user streak when they complete a lesson"""
+    # Get or create gamification record
+    gamification = db.query(UserGamification).filter(
+        UserGamification.user_id == current_user.id
+    ).first()
+    
+    if not gamification:
+        gamification = UserGamification(
+            user_id=current_user.id,
+            current_streak=0,
+            longest_streak=0,
+            total_xp=0,
+            current_level=1,
+            streak_freeze_count=3
+        )
+        db.add(gamification)
+    
+    # Calculate streak logic
+    today = datetime.utcnow().date()
+    last_activity = gamification.last_activity_date.date() if gamification.last_activity_date else None
+    
+    xp_earned = 10  # Base XP for lesson completion
+    level_up = False
+    new_level = None
+    
+    if last_activity is None:
+        # First activity
+        gamification.current_streak = 1
+        gamification.last_activity_date = datetime.utcnow()
+    elif last_activity == today:
+        # Already completed lesson today, no streak increase but still earn XP
+        pass
+    elif (today - last_activity).days == 1:
+        # Consecutive day - increase streak
+        gamification.current_streak += 1
+        gamification.last_activity_date = datetime.utcnow()
+        xp_earned += 5  # Bonus XP for maintaining streak
+        
+        # Check for streak milestone bonuses
+        if gamification.current_streak % 7 == 0:  # Weekly milestone
+            xp_earned += 20
+        elif gamification.current_streak % 30 == 0:  # Monthly milestone
+            xp_earned += 100
+    else:
+        # Streak broken - reset
+        gamification.current_streak = 1
+        gamification.last_activity_date = datetime.utcnow()
+    
+    # Update longest streak
+    if gamification.current_streak > gamification.longest_streak:
+        gamification.longest_streak = gamification.current_streak
+    
+    # Add XP and check for level up
+    old_level = gamification.current_level
+    gamification.total_xp += xp_earned
+    
+    # Level calculation (100 XP per level, increasing by 50 each level)
+    xp_needed = 0
+    level = 1
+    while xp_needed <= gamification.total_xp:
+        level += 1
+        xp_needed += 50 + (level * 50)  # Progressive XP requirements
+    
+    gamification.current_level = level - 1
+    
+    if gamification.current_level > old_level:
+        level_up = True
+        new_level = gamification.current_level
+        xp_earned += 25  # Level up bonus
+        gamification.total_xp += 25
+    
+    db.commit()
+    
+    return StreakUpdateResponse(
+        current_streak=gamification.current_streak,
+        longest_streak=gamification.longest_streak,
+        xp_earned=xp_earned,
+        level_up=level_up,
+        new_level=new_level
+    )
 
 # Lesson creation endpoints (admin only for now)
 @app.post("/api/lessons", response_model=LessonResponse)

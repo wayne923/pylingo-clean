@@ -126,3 +126,49 @@ class UserPreferencesResponse(BaseModel):
     
     class Config:
         from_attributes = True
+
+# Gamification schemas
+class UserGamificationResponse(BaseModel):
+    id: int
+    user_id: int
+    current_streak: int
+    longest_streak: int
+    total_xp: int
+    current_level: int
+    last_activity_date: Optional[datetime]
+    streak_freeze_count: int
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class AchievementResponse(BaseModel):
+    id: int
+    name: str
+    description: str
+    icon: str
+    category: str
+    requirement_type: str
+    requirement_value: int
+    xp_reward: int
+    
+    class Config:
+        from_attributes = True
+
+class UserAchievementResponse(BaseModel):
+    id: int
+    user_id: int
+    achievement_id: int
+    earned_at: datetime
+    achievement: AchievementResponse
+    
+    class Config:
+        from_attributes = True
+
+class StreakUpdateResponse(BaseModel):
+    current_streak: int
+    longest_streak: int
+    xp_earned: int
+    level_up: bool
+    new_level: Optional[int] = None

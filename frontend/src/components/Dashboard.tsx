@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { authService, UserPreferences } from '../services/authService';
 import { lessons } from '../data/lessons';
-import EnhancedSkillTree from './EnhancedSkillTree';
+import KnowledgeGraph from './KnowledgeGraph';
 import PersonalizedRecommendations from './PersonalizedRecommendations';
 import QuickActions from './QuickActions';
 import ProgressOverview from './ProgressOverview';
+import GamificationStats from './GamificationStats';
+import { StreakUpdate } from '../services/gamificationService';
 import './Dashboard.css';
 
 interface DashboardProps {
@@ -25,6 +27,8 @@ const Dashboard: React.FC<DashboardProps> = ({
   const [userPreferences, setUserPreferences] = useState<UserPreferences | null>(null);
   const [activeView, setActiveView] = useState<'overview' | 'skillTree' | 'recommendations'>('overview');
   const [isLoading, setIsLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [lastStreakUpdate, setLastStreakUpdate] = useState<StreakUpdate | null>(null);
 
   useEffect(() => {
     loadUserData();
@@ -82,6 +86,16 @@ const Dashboard: React.FC<DashboardProps> = ({
     }
   };
 
+  const handleStreakUpdate = (update: StreakUpdate) => {
+    setLastStreakUpdate(update);
+    
+    // Show level up notification if applicable
+    if (update.level_up && update.new_level) {
+      // Could add a toast notification here
+      console.log(`Level up! Welcome to level ${update.new_level}!`);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="dashboard-loading">
@@ -114,20 +128,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             )}
           </div>
           
-          <div className="hero-stats">
-            <div className="stat-card">
-              <div className="stat-number">{completedLessons.size}</div>
-              <div className="stat-label">Lessons Completed</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-number">{userPreferences?.skill_level || 'Beginner'}</div>
-              <div className="stat-label">Current Level</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-number">{userPreferences?.goals?.length || 0}</div>
-              <div className="stat-label">Active Goals</div>
-            </div>
-          </div>
+          <GamificationStats onStreakUpdate={handleStreakUpdate} />
         </div>
       </div>
 
@@ -143,7 +144,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           className={`nav-tab ${activeView === 'skillTree' ? 'active' : ''}`}
           onClick={() => setActiveView('skillTree')}
         >
-          🌳 Skill Tree
+          🌌 Learning Universe
         </button>
         <button 
           className={`nav-tab ${activeView === 'recommendations' ? 'active' : ''}`}
@@ -167,12 +168,13 @@ const Dashboard: React.FC<DashboardProps> = ({
               userPreferences={userPreferences}
               completedLessons={completedLessons}
               lessons={lessons}
+              onStartLesson={onStartLesson}
             />
           </div>
         )}
         
         {activeView === 'skillTree' && (
-          <EnhancedSkillTree 
+          <KnowledgeGraph 
             userPreferences={userPreferences}
             completedLessons={completedLessons}
             onStartLesson={onStartLesson}

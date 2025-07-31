@@ -199,6 +199,109 @@
   transition: width 0.5s ease;
 }
 
+/* Lesson Progress Indicators */
+.next-lesson-indicator {
+  margin-top: 12px;
+}
+
+.next-lesson-btn {
+  width: 100%;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #4ecdc4 0%, #44b3aa 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.next-lesson-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(78, 205, 196, 0.3);
+}
+
+.track-complete-indicator {
+  margin-top: 12px;
+  text-align: center;
+  padding: 8px;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: white;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* Recent Lessons Section */
+.recent-lessons-section {
+  margin-bottom: 32px;
+}
+
+.recent-lessons-section h3 {
+  font-size: 1.125rem;
+  color: #1f2937;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.recent-lessons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 12px;
+}
+
+.recent-lesson-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.recent-lesson-card:hover {
+  background: #f1f5f9;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.recent-lesson-card .lesson-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.recent-lesson-card .lesson-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.recent-lesson-card .lesson-info h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 4px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-lesson-card .lesson-track {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: capitalize;
+}
+
+.recent-lesson-card .lesson-completed-badge {
+  font-size: 1.2rem;
+  color: #22c55e;
+  flex-shrink: 0;
+}
+
 /* Difficulty Breakdown */
 .difficulty-breakdown {
   margin-bottom: 32px;

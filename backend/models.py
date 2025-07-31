@@ -18,6 +18,7 @@ class User(Base):
     # Relationships
     progress = relationship("UserProgress", back_populates="user")
     preferences = relationship("UserPreferences", back_populates="user", uselist=False)
+    gamification = relationship("UserGamification", back_populates="user", uselist=False)
 
 class Track(Base):
     __tablename__ = "tracks"
@@ -83,3 +84,45 @@ class UserPreferences(Base):
     
     # Relationships
     user = relationship("User", back_populates="preferences")
+
+class UserGamification(Base):
+    __tablename__ = "user_gamification"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, unique=True)
+    current_streak = Column(Integer, default=0)
+    longest_streak = Column(Integer, default=0)
+    total_xp = Column(Integer, default=0)
+    current_level = Column(Integer, default=1)
+    last_activity_date = Column(DateTime)  # Last day user completed a lesson
+    streak_freeze_count = Column(Integer, default=0)  # Available streak freezes
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    user = relationship("User", back_populates="gamification")
+
+class Achievement(Base):
+    __tablename__ = "achievements"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    description = Column(Text, nullable=False)
+    icon = Column(String(10), nullable=False)  # Emoji icon
+    category = Column(String(50), nullable=False)  # streak, lessons, skills
+    requirement_type = Column(String(50), nullable=False)  # count, streak, etc.
+    requirement_value = Column(Integer, nullable=False)
+    xp_reward = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class UserAchievement(Base):
+    __tablename__ = "user_achievements"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    achievement_id = Column(Integer, ForeignKey("achievements.id"), nullable=False)
+    earned_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    user = relationship("User")
+    achievement = relationship("Achievement")

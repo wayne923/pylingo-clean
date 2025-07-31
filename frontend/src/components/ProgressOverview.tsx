@@ -7,6 +7,7 @@ interface ProgressOverviewProps {
   userPreferences: UserPreferences | null;
   completedLessons: Set<number>;
   lessons: Lesson[];
+  onStartLesson?: (lessonId: number, track: string) => void;
 }
 
 interface TrackProgress {
@@ -32,7 +33,8 @@ interface Achievement {
 const ProgressOverview: React.FC<ProgressOverviewProps> = ({
   userPreferences,
   completedLessons,
-  lessons
+  lessons,
+  onStartLesson
 }) => {
   const getTrackProgress = (): TrackProgress[] => {
     const tracks = [
@@ -166,6 +168,20 @@ const ProgressOverview: React.FC<ProgressOverviewProps> = ({
   const earnedAchievements = achievements.filter(a => a.earned);
   const overallStats = getOverallStats();
 
+  // Get next lesson for each track
+  const getNextLessonForTrack = (track: string) => {
+    const trackLessons = lessons.filter(l => l.track === track);
+    return trackLessons.find(l => !completedLessons.has(l.id));
+  };
+
+  // Get recent lessons (last 5 completed)
+  const getRecentLessons = () => {
+    const completedLessonsList = lessons.filter(l => completedLessons.has(l.id));
+    return completedLessonsList.slice(-5);
+  };
+
+  const recentLessons = getRecentLessons();
+
   return (
     <div className="progress-overview">
       <div className="overview-header">
@@ -225,10 +241,54 @@ const ProgressOverview: React.FC<ProgressOverviewProps> = ({
                   }}
                 />
               </div>
+              
+              {/* Next lesson indicator */}
+              {(() => {
+                const nextLesson = getNextLessonForTrack(track.track);
+                return nextLesson && onStartLesson ? (
+                  <div className="next-lesson-indicator">
+                    <button 
+                      className="next-lesson-btn"
+                      onClick={() => onStartLesson(nextLesson.id, nextLesson.track)}
+                    >
+                      Continue: {nextLesson.title}
+                    </button>
+                  </div>
+                ) : track.percentage === 100 ? (
+                  <div className="track-complete-indicator">
+                    <span>🎉 Track Complete!</span>
+                  </div>
+                ) : null;
+              })()}
             </div>
           ))}
         </div>
       </div>
+
+      {/* Recent Lessons */}
+      {recentLessons.length > 0 && (
+        <div className="recent-lessons-section">
+          <h3>⏱️ Recently Completed</h3>
+          <div className="recent-lessons-grid">
+            {recentLessons.map((lesson) => (
+              <div key={lesson.id} className="recent-lesson-card">
+                <div className="lesson-icon">
+                  {lesson.track === 'beginner' && '🐍'}
+                  {lesson.track === 'algorithms' && '⚡'}
+                  {lesson.track === 'data-science' && '📊'}
+                  {lesson.track === 'web-development' && '🌐'}
+                  {lesson.track === 'ai-ml' && '🤖'}
+                </div>
+                <div className="lesson-info">
+                  <h4>{lesson.title}</h4>
+                  <div className="lesson-track">{lesson.track}</div>
+                </div>
+                <div className="lesson-completed-badge">✅</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Difficulty Breakdown */}
       <div className="difficulty-breakdown">
