@@ -1031,6 +1031,48 @@
   }
 }
 
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  /* Improve touch targets for mobile devices */
+  .view-btn {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0.85rem;
+  }
+  
+  .close-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  
+  .start-lesson-btn {
+    min-height: 44px;
+    padding: 0.85rem 1.5rem;
+  }
+  
+  .skill-node {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  
+  /* Remove hover effects that don't work on touch */
+  .skill-node:hover,
+  .view-btn:hover,
+  .close-btn:hover,
+  .start-lesson-btn:hover {
+    transform: none;
+  }
+  
+  /* Add touch feedback */
+  .skill-node:active,
+  .view-btn:active,
+  .close-btn:active,
+  .start-lesson-btn:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+}
+
 @media (max-width: 768px) {
   .enhanced-skill-tree {
     padding: 0;

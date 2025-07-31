@@ -373,6 +373,23 @@ const EnhancedSkillTree: React.FC<EnhancedSkillTreeProps> = ({
     }
   };
 
+  // Touch event handlers for mobile support
+  const handleNodeTouch = (node: SkillNode, event: React.TouchEvent) => {
+    event.preventDefault(); // Prevent unwanted scrolling/zooming
+    setHoveredNode(node);
+  };
+
+  const handleNodeTouchEnd = (node: SkillNode, event: React.TouchEvent) => {
+    event.preventDefault();
+    handleNodeClick(node);
+    // Clear hover state after a short delay on mobile
+    setTimeout(() => setHoveredNode(null), 150);
+  };
+
+  const handleTouchLeave = () => {
+    setHoveredNode(null);
+  };
+
   const handleStartLearning = (node: SkillNode) => {
     if (node.nextLesson) {
       onStartLesson(node.nextLesson.id, node.track);
@@ -411,6 +428,9 @@ const EnhancedSkillTree: React.FC<EnhancedSkillTreeProps> = ({
         onClick={() => handleNodeClick(node)}
         onMouseEnter={() => setHoveredNode(node)}
         onMouseLeave={() => setHoveredNode(null)}
+        onTouchStart={(e) => handleNodeTouch(node, e)}
+        onTouchEnd={(e) => handleNodeTouchEnd(node, e)}
+        onTouchCancel={handleTouchLeave}
       >
         <div className="node-glow" />
         <div className="node-content">
@@ -504,6 +524,10 @@ const EnhancedSkillTree: React.FC<EnhancedSkillTreeProps> = ({
                 key={mode}
                 className={`view-btn ${viewMode === mode ? 'active' : ''}`}
                 onClick={() => setViewMode(mode as any)}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  setViewMode(mode as any);
+                }}
                 title={`${mode.charAt(0).toUpperCase() + mode.slice(1)} View`}
               >
                 {mode === 'constellation' ? '🌌' : mode === 'tree' ? '🌳' : mode === 'roadmap' ? '🗺️' : '🎯'}
@@ -541,7 +565,14 @@ const EnhancedSkillTree: React.FC<EnhancedSkillTreeProps> = ({
                 <span className={`category-badge ${selectedNode.category}`}>{selectedNode.category}</span>
               </div>
             </div>
-            <button className="close-btn" onClick={() => setSelectedNode(null)}>×</button>
+            <button 
+              className="close-btn" 
+              onClick={() => setSelectedNode(null)}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                setSelectedNode(null);
+              }}
+            >×</button>
           </div>
           
           <div className="detail-content">
@@ -593,6 +624,10 @@ const EnhancedSkillTree: React.FC<EnhancedSkillTreeProps> = ({
                   <button
                     className="start-lesson-btn"
                     onClick={() => handleStartLearning(selectedNode)}
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      handleStartLearning(selectedNode);
+                    }}
                   >
                     Start Lesson →
                   </button>
