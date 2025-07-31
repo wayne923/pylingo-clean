@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Lesson } from '../data/lessons';
 import { ApiLesson } from '../services/api';
 import { testRunnerService, TestSuiteResult } from '../services/testRunner';
+import { usePyodide } from '../hooks/usePyodide';
 import Editor from '@monaco-editor/react';
 import './ChallengeLesson.css';
 
@@ -16,20 +17,19 @@ const ChallengeLesson: React.FC<ChallengeLessonProps> = ({ lesson, onComplete })
   const [isRunning, setIsRunning] = useState(false);
   const [showHints, setShowHints] = useState(false);
   const [activeTab, setActiveTab] = useState<'description' | 'examples' | 'constraints'>('description');
+  const { pyodide, isLoading: pyodideLoading, runPython } = usePyodide();
 
   const handleRunTests = async () => {
-    if (!lesson.testCases || !lesson.functionName) return;
+    if (!lesson.testCases || !lesson.functionName || !pyodide) return;
     
     setIsRunning(true);
     setTestResults(null);
     
     try {
-      const results = await testRunnerService.runTestSuite(
+      const results = await runSimpleTestSuite(
         code,
         lesson.testCases,
-        lesson.functionName,
-        lesson.timeLimit,
-        lesson.memoryLimit
+        lesson.functionName
       );
       
       setTestResults(results);
@@ -51,6 +51,94 @@ const ChallengeLesson: React.FC<ChallengeLessonProps> = ({ lesson, onComplete })
     } finally {
       setIsRunning(false);
     }
+  };
+
+  const runSimpleTestSuite = async (userCode: string, testCases: any[], functionName: string): Promise<TestSuiteResult> => {
+    const results = [];
+    let hiddenTestsPassed = 0;
+    let hiddenTestsTotal = 0;
+
+    for (const testCase of testCases) {
+      if (testCase.hidden) {
+        hiddenTestsTotal++;
+      }
+
+      try {
+        // Generate test code
+        const testCode = `
+${userCode}
+
+# Test execution
+import json
+result = ${functionName}(${formatTestInput(testCase.input)})
+print(json.dumps(result))
+`;
+
+        const { output, error } = await runPython(testCode);
+        
+        if (error) {
+          results.push({
+            passed: false,
+            actualOutput: null,
+            expectedOutput: testCase.expectedOutput,
+            error: error
+          });
+        } else {
+          try {
+            const actualOutput = JSON.parse(output.trim());
+            const passed = JSON.stringify(actualOutput) === JSON.stringify(testCase.expectedOutput);
+            
+            results.push({
+              passed,
+              actualOutput,
+              expectedOutput: testCase.expectedOutput
+            });
+
+            if (testCase.hidden && passed) {
+              hiddenTestsPassed++;
+            }
+          } catch (parseError) {
+            results.push({
+              passed: false,
+              actualOutput: output.trim(),
+              expectedOutput: testCase.expectedOutput,
+              error: 'Failed to parse output'
+            });
+          }
+        }
+      } catch (testError: any) {
+        results.push({
+          passed: false,
+          actualOutput: null,
+          expectedOutput: testCase.expectedOutput,
+          error: testError.message
+        });
+      }
+    }
+
+    const allPassed = results.every(r => r.passed);
+    const score = Math.round((results.filter(r => r.passed).length / results.length) * 100);
+
+    return {
+      allPassed,
+      results,
+      hiddenTestsPassed,
+      hiddenTestsTotal,
+      score,
+      executionSummary: {
+        totalTime: 0,
+        averageTime: 0,
+        maxMemory: 0
+      }
+    };
+  };
+
+  const formatTestInput = (input: any): string => {
+    if (typeof input === 'object' && input !== null && !Array.isArray(input)) {
+      // Handle multiple arguments passed as object (e.g., {nums: [2,7,11,15], target: 9})
+      return Object.values(input).map(val => JSON.stringify(val)).join(', ');
+    }
+    return JSON.stringify(input);
   };
 
   const getStatusIcon = (passed: boolean) => passed ? '✅' : '❌';
@@ -197,9 +285,12 @@ const ChallengeLesson: React.FC<ChallengeLessonProps> = ({ lesson, onComplete })
               <button 
                 className="run-tests-button"
                 onClick={handleRunTests}
-                disabled={isRunning}
+                disabled={isRunning || pyodideLoading || !pyodide}
               >
-                {isRunning ? '⏳ Running Tests...' : '▶️ Run Tests'}
+                {pyodideLoading ? '🔄 Loading Python...' : 
+                 isRunning ? '⏳ Running Tests...' : 
+                 !pyodide ? '❌ Python Not Ready' :
+                 '▶️ Run Tests'}
               </button>
             </div>
             
