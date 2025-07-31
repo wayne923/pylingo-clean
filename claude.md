@@ -1,0 +1,1 @@
+Can we make duolingo for learning python, we want everything from very basic just getting started all the way to AI mastery and different tracks like data engineering, etc.
