@@ -152,14 +152,33 @@ print(x.shape)`,
           username: formData.username,
           password: formData.password
         });
+        // New users always go through assessment
+        setStep('assessment');
       } else {
+        // Login existing user
         await authService.login({
           username: formData.username,
           password: formData.password
         });
+        
+        // Check if existing user already has preferences
+        try {
+          const existingPreferences = await authService.getUserPreferences();
+          if (existingPreferences && existingPreferences.completed_assessment) {
+            // User has already completed onboarding, skip assessment
+            console.log('Existing user with preferences found, skipping assessment');
+            onSuccess();
+            return;
+          } else {
+            // User exists but hasn't completed onboarding
+            console.log('Existing user without preferences, starting assessment');
+            setStep('assessment');
+          }
+        } catch (prefError) {
+          console.log('Could not load preferences, starting assessment:', prefError);
+          setStep('assessment');
+        }
       }
-      
-      setStep('assessment');
     } catch (err: any) {
       setError(err.message || 'Authentication failed');
     } finally {
