@@ -122,7 +122,7 @@ function App() {
   };
 
   const getRecommendedTrackAndLesson = (preferences: any) => {
-    const { skillLevel, goals, experience } = preferences;
+    const { skillLevel, goals } = preferences;
     
     // Priority order for track selection based on goals
     if (goals.includes('ai-ml')) {
