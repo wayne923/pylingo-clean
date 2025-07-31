@@ -194,16 +194,23 @@
   pointer-events: none;
   user-select: none;
   transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transform-origin: center center;
 }
 
 .node-icon.hovered {
-  animation: iconBounce 0.5s ease-out;
+  animation: refinedIconHover 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-@keyframes iconBounce {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.3) rotate(15deg); }
-  100% { transform: scale(1.2); }
+@keyframes refinedIconHover {
+  0% { 
+    transform: scale(1) rotate(0deg); 
+  }
+  50% { 
+    transform: scale(1.15) rotate(8deg); 
+  }
+  100% { 
+    transform: scale(1.1) rotate(0deg); 
+  }
 }
 
 .node-label {
@@ -610,27 +617,27 @@
   transition: transform 0.2s ease;
 }
 
-/* Journey Path Specific Styles */
+/* Journey Path Specific Styles - More subtle ambient */
 .track-backgrounds path {
-  transition: all 0.5s ease;
-  animation: ambientGlow 8s ease-in-out infinite;
+  transition: all 0.8s ease;
+  animation: subtleAmbientGlow 12s ease-in-out infinite;
 }
 
 .track-backgrounds path:nth-child(1) { animation-delay: 0s; }
-.track-backgrounds path:nth-child(2) { animation-delay: 1.6s; }
-.track-backgrounds path:nth-child(3) { animation-delay: 3.2s; }
-.track-backgrounds path:nth-child(4) { animation-delay: 4.8s; }
-.track-backgrounds path:nth-child(5) { animation-delay: 6.4s; }
+.track-backgrounds path:nth-child(2) { animation-delay: 2.4s; }
+.track-backgrounds path:nth-child(3) { animation-delay: 4.8s; }
+.track-backgrounds path:nth-child(4) { animation-delay: 7.2s; }
+.track-backgrounds path:nth-child(5) { animation-delay: 9.6s; }
 
-@keyframes ambientGlow {
+@keyframes subtleAmbientGlow {
   0%, 100% { 
-    opacity: 0.2;
+    opacity: 0.15;
     stroke-width: 6;
   }
   50% { 
-    opacity: 0.4;
-    stroke-width: 8;
-    filter: drop-shadow(0 0 10px currentColor);
+    opacity: 0.3;
+    stroke-width: 7;
+    filter: drop-shadow(0 0 6px currentColor);
   }
 }
 
@@ -645,7 +652,8 @@
 
 .journey-paths .journey-connection:hover {
   stroke-width: 4;
-  filter: drop-shadow(0 4px 8px rgba(78, 205, 196, 0.3));
+  filter: drop-shadow(0 3px 6px rgba(78, 205, 196, 0.4));
+  transition: all 0.3s ease;
 }
 
 /* Journey Path Animations */
@@ -674,9 +682,9 @@
     opacity: 0.8;
   }
   50% {
-    stroke-width: 6;
+    stroke-width: 5;
     opacity: 1;
-    filter: drop-shadow(0 0 15px currentColor);
+    filter: drop-shadow(0 0 8px currentColor);
   }
   100% {
     stroke-width: 4;
@@ -691,12 +699,22 @@
   transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
-.skill-node.unlocked {
-  animation: nodeUnlock 0.5s ease-out, breathe 4s ease-in-out infinite 1s;
+.skill-node.unlocked:not([class*="lesson"]):not([class*="more"]) {
+  animation: nodeUnlock 0.5s ease-out, gentleBreathe 6s ease-in-out infinite 2s;
 }
 
-.skill-node.journey-node:hover {
-  animation: hoverMagic 0.6s ease-out, float 2s ease-in-out infinite;
+.skill-node.journey-node:hover:not([class*="lesson"]):not([class*="more"]) {
+  animation: refinedHover 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), gentleFloat 3s ease-in-out infinite;
+  cursor: pointer;
+}
+
+/* Expanded subnodes should be much more subtle */
+.skill-node[class*="lesson"], .skill-node[class*="more"] {
+  animation: none !important;
+}
+
+.skill-node[class*="lesson"]:hover, .skill-node[class*="more"]:hover {
+  animation: subtleHover 0.3s ease-out;
   cursor: pointer;
 }
 
@@ -706,7 +724,7 @@
     opacity: 0.5;
   }
   50% {
-    transform: scale(1.2);
+    transform: scale(1.15);
   }
   100% {
     transform: scale(1);
@@ -714,28 +732,32 @@
   }
 }
 
-@keyframes breathe {
+@keyframes gentleBreathe {
   0%, 100% { 
     transform: scale(1);
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
   }
   50% { 
-    transform: scale(1.05);
-    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3));
+    transform: scale(1.03);
+    filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.25));
   }
 }
 
-@keyframes hoverMagic {
-  0% { transform: scale(1) rotate(0deg); }
-  25% { transform: scale(1.2) rotate(5deg); }
-  50% { transform: scale(1.15) rotate(-3deg); }
-  75% { transform: scale(1.1) rotate(2deg); }
-  100% { transform: scale(1.08) rotate(0deg); }
+@keyframes refinedHover {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+  100% { transform: scale(1.08); }
 }
 
-@keyframes float {
+@keyframes gentleFloat {
   0%, 100% { transform: translateY(0px) scale(1.08); }
-  50% { transform: translateY(-8px) scale(1.12); }
+  50% { transform: translateY(-4px) scale(1.08); }
+}
+
+@keyframes subtleHover {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1.03); }
 }
 
 /* Journey Path Legends */
@@ -764,27 +786,22 @@
   border-radius: 2px;
 }
 
-/* Celebration effects for completed nodes */
+/* Celebration effects for completed nodes - more refined */
 .skill-node.completed {
-  animation: completionCelebration 0.6s ease-out, sparkle 3s ease-in-out infinite 0.6s;
+  animation: completionCelebration 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), gentleSparkle 4s ease-in-out infinite 0.5s;
 }
 
 @keyframes completionCelebration {
   0% { transform: scale(1); }
-  25% { transform: scale(1.2) rotate(5deg); }
-  50% { transform: scale(1.1) rotate(-3deg); }
-  75% { transform: scale(1.05) rotate(1deg); }
-  100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
 }
 
-@keyframes sparkle {
+@keyframes gentleSparkle {
   0%, 100% { 
-    filter: drop-shadow(0 0 5px gold) drop-shadow(0 0 10px rgba(255, 215, 0, 0.5));
+    filter: drop-shadow(0 0 4px gold) drop-shadow(0 0 8px rgba(255, 215, 0, 0.4));
   }
-  33% {
-    filter: drop-shadow(0 0 8px gold) drop-shadow(0 0 15px rgba(255, 215, 0, 0.7));
-  }
-  66% {
-    filter: drop-shadow(0 0 12px gold) drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
+  50% {
+    filter: drop-shadow(0 0 6px gold) drop-shadow(0 0 12px rgba(255, 215, 0, 0.6));
   }
 }

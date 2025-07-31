@@ -733,16 +733,17 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
                   opacity={node.id.includes('-lesson-') || node.id.includes('-more') ? 0.7 : 1}
                 />
                 
-                {/* Node icon with hover effects */}
+                {/* Node icon - always perfectly centered */}
                 <text
                   x={node.position.x}
                   y={node.position.y + 5}
                   textAnchor="middle"
+                  dominantBaseline="central"
                   className={`node-icon ${hoveredNode?.id === node.id ? 'hovered' : ''}`}
                   pointerEvents="none"
                   style={{
-                    fontSize: hoveredNode?.id === node.id ? '1.8rem' : '1.5rem',
-                    transition: 'font-size 0.3s ease'
+                    fontSize: hoveredNode?.id === node.id && !node.id.includes('-lesson-') && !node.id.includes('-more') ? '1.65rem' : node.id.includes('-lesson-') || node.id.includes('-more') ? '1.2rem' : '1.5rem',
+                    transition: 'font-size 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)'
                   }}
                 >
                   {node.icon}
