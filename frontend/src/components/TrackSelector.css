@@ -1,0 +1,91 @@
+.track-selector {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.track-selector h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.tracks {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.track-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #fafafa;
+}
+
+.track-card:hover {
+  border-color: #667eea;
+  background: #f8f9ff;
+}
+
+.track-card.selected {
+  border-color: #667eea;
+  background: linear-gradient(135deg, #667eea20, #764ba220);
+}
+
+.track-icon {
+  font-size: 2rem;
+  min-width: 50px;
+  text-align: center;
+}
+
+.track-info {
+  flex: 1;
+}
+
+.track-info h4 {
+  margin: 0 0 5px 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.track-description {
+  margin: 0 0 8px 0;
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.track-stats {
+  display: flex;
+  gap: 15px;
+  font-size: 0.8rem;
+}
+
+.lesson-count {
+  color: #667eea;
+  font-weight: 500;
+}
+
+.difficulty-range {
+  color: #999;
+}
+
+@media (max-width: 768px) {
+  .track-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+  }
+  
+  .track-icon {
+    min-width: auto;
+  }
+}

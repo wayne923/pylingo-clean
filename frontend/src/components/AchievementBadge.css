@@ -1,0 +1,77 @@
+.achievement-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+  background: #f8f9fa;
+  transition: all 0.3s ease;
+  margin-bottom: 8px;
+}
+
+.achievement-badge.unlocked {
+  border-color: #ffd700;
+  background: linear-gradient(135deg, #fff9e6, #ffeaa7);
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+}
+
+.achievement-badge.locked {
+  opacity: 0.6;
+}
+
+.achievement-icon {
+  font-size: 2rem;
+  min-width: 40px;
+  text-align: center;
+}
+
+.achievement-info {
+  flex: 1;
+}
+
+.achievement-title {
+  margin: 0 0 4px 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.achievement-badge.unlocked .achievement-title {
+  color: #d68910;
+  font-weight: 600;
+}
+
+.achievement-description {
+  margin: 0 0 8px 0;
+  font-size: 0.85rem;
+  color: #666;
+  line-height: 1.3;
+}
+
+.achievement-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 6px;
+  background: #e9ecef;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 0.75rem;
+  color: #666;
+  font-weight: 500;
+  min-width: 30px;
+}

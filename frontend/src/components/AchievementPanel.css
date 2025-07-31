@@ -1,0 +1,71 @@
+.achievement-panel {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.achievement-header {
+  padding: 15px 20px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #ffd700, #ffed4a);
+  color: #8b6914;
+  transition: background 0.2s ease;
+}
+
+.achievement-header:hover {
+  background: linear-gradient(135deg, #ffed4a, #ffd700);
+}
+
+.achievement-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.achievement-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.unlocked-count {
+  background: rgba(255, 255, 255, 0.3);
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.expand-icon {
+  font-size: 0.8rem;
+  transition: transform 0.2s ease;
+}
+
+.achievement-list {
+  padding: 15px 20px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.achievement-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.achievement-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.achievement-list::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.achievement-list::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
