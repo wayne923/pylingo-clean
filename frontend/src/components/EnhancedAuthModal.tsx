@@ -242,7 +242,8 @@ print(x.shape)`,
       }, 1500);
     } catch (error) {
       console.error('Error completing onboarding:', error);
-      setError(`Failed to complete setup: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setError(`Failed to complete setup: ${errorMessage}`);
       setIsLoading(false);
     }
   };
