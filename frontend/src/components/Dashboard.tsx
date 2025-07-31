@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { authService, UserPreferences } from '../services/authService';
 import { lessons } from '../data/lessons';
-import SkillTree from './SkillTree';
+import EnhancedSkillTree from './EnhancedSkillTree';
 import PersonalizedRecommendations from './PersonalizedRecommendations';
 import QuickActions from './QuickActions';
 import ProgressOverview from './ProgressOverview';
@@ -173,7 +173,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         )}
         
         {activeView === 'skillTree' && (
-          <SkillTree 
+          <EnhancedSkillTree 
             userPreferences={userPreferences}
             completedLessons={completedLessons}
             onStartLesson={onStartLesson}
