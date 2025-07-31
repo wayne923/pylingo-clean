@@ -1,3 +1,10 @@
+export interface TestCase {
+  input: any;
+  expectedOutput: any;
+  description: string;
+  hidden?: boolean; // Hidden test cases for evaluation
+}
+
 export interface Lesson {
   id: number;
   title: string;
@@ -14,6 +21,18 @@ export interface Lesson {
     mustContain?: string[];
     mustNotContain?: string[];
   };
+  // New fields for LeetCode-style challenges
+  type?: 'tutorial' | 'challenge';
+  testCases?: TestCase[];
+  functionName?: string;
+  timeLimit?: number; // in milliseconds
+  memoryLimit?: number; // in MB
+  constraints?: string[];
+  examples?: {
+    input: string;
+    output: string;
+    explanation?: string;
+  }[];
 }
 
 // AI/ML Track Lessons - PyTorch to Transformers
@@ -1420,5 +1439,233 @@ print(f"\\n✅ ML analysis completed on {len(df)} days of business data")
   }
 ];
 
+// LeetCode-Style Coding Challenges
+const codingChallenges: Lesson[] = [
+  {
+    id: 1001,
+    title: "Two Sum",
+    description: "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.",
+    type: "challenge",
+    track: "algorithms",
+    difficulty: "beginner",
+    concepts: ["arrays", "hash-tables", "algorithms"],
+    functionName: "twoSum",
+    timeLimit: 5000,
+    memoryLimit: 50,
+    initialCode: `def twoSum(nums, target):
+    """
+    :type nums: List[int]
+    :type target: int
+    :rtype: List[int]
+    """
+    # Write your solution here
+    pass
+
+# Test your solution
+result = twoSum([2, 7, 11, 15], 9)
+print(result)`,
+    expectedOutput: "[0, 1]",
+    examples: [
+      {
+        input: "nums = [2,7,11,15], target = 9",
+        output: "[0,1]", 
+        explanation: "Because nums[0] + nums[1] == 9, we return [0, 1]."
+      },
+      {
+        input: "nums = [3,2,4], target = 6",
+        output: "[1,2]"
+      }
+    ],
+    testCases: [
+      {
+        input: { nums: [2, 7, 11, 15], target: 9 },
+        expectedOutput: [0, 1],
+        description: "Basic case"
+      },
+      {
+        input: { nums: [3, 2, 4], target: 6 },
+        expectedOutput: [1, 2],
+        description: "Different indices"
+      },
+      {
+        input: { nums: [3, 3], target: 6 },
+        expectedOutput: [0, 1],
+        description: "Same values"
+      },
+      {
+        input: { nums: [1, 2, 3, 4, 5], target: 8 },
+        expectedOutput: [2, 4],
+        description: "Larger array",
+        hidden: true
+      }
+    ],
+    constraints: [
+      "2 <= nums.length <= 10^4",
+      "-10^9 <= nums[i] <= 10^9", 
+      "-10^9 <= target <= 10^9",
+      "Only one valid answer exists."
+    ],
+    hints: [
+      "Try using a hash map to store numbers you've seen",
+      "For each number, check if target - number exists in your hash map",
+      "Remember to return the indices, not the values"
+    ],
+    validation: {
+      requiredKeywords: ["def", "return"],
+      mustContain: ["twoSum"],
+      forbiddenKeywords: ["[0, 1]", "[1, 2]"]
+    }
+  },
+  {
+    id: 1002,
+    title: "Reverse String",
+    description: "Write a function that reverses a string. The input string is given as an array of characters s.",
+    type: "challenge",
+    track: "algorithms", 
+    difficulty: "beginner",
+    concepts: ["strings", "two-pointers", "arrays"],
+    functionName: "reverseString",
+    timeLimit: 3000,
+    memoryLimit: 30,
+    initialCode: `def reverseString(s):
+    """
+    :type s: List[str]
+    :rtype: None Do not return anything, modify s in-place instead.
+    """
+    # Write your solution here
+    pass
+
+# Test your solution
+s = ["h","e","l","l","o"]
+reverseString(s)
+print(s)`,
+    expectedOutput: "['o', 'l', 'l', 'e', 'h']",
+    examples: [
+      {
+        input: 's = ["h","e","l","l","o"]',
+        output: '["o","l","l","e","h"]'
+      },
+      {
+        input: 's = ["H","a","n","n","a","h"]',
+        output: '["h","a","n","n","a","H"]'
+      }
+    ],
+    testCases: [
+      {
+        input: { s: ["h","e","l","l","o"] },
+        expectedOutput: ["o","l","l","e","h"],
+        description: "Basic string"
+      },
+      {
+        input: { s: ["H","a","n","n","a","h"] },
+        expectedOutput: ["h","a","n","n","a","H"],
+        description: "Palindrome-ish"
+      },
+      {
+        input: { s: ["a"] },
+        expectedOutput: ["a"],
+        description: "Single character",
+        hidden: true
+      }
+    ],
+    constraints: [
+      "1 <= s.length <= 10^5",
+      "s[i] is a printable ascii character."
+    ],
+    hints: [
+      "Use two pointers, one at the start and one at the end",
+      "Swap characters and move pointers towards each other",
+      "Stop when pointers meet in the middle"
+    ],
+    validation: {
+      requiredKeywords: ["def"],
+      mustContain: ["reverseString"],
+      forbiddenKeywords: ["[::-1]", "reversed(", ".reverse()"]
+    }
+  },
+  {
+    id: 1003,
+    title: "Valid Parentheses",
+    description: "Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid.",
+    type: "challenge",
+    track: "algorithms",
+    difficulty: "intermediate", 
+    concepts: ["stacks", "strings", "data-structures"],
+    functionName: "isValid",
+    timeLimit: 4000,
+    memoryLimit: 40,
+    initialCode: `def isValid(s):
+    """
+    :type s: str
+    :rtype: bool
+    """
+    # Write your solution here
+    pass
+
+# Test your solution
+result = isValid("()[]{}")
+print(result)`,
+    expectedOutput: "True",
+    examples: [
+      {
+        input: 's = "()"',
+        output: "true"
+      },
+      {
+        input: 's = "()[]{}"',
+        output: "true"
+      },
+      {
+        input: 's = "(]"',
+        output: "false"
+      }
+    ],
+    testCases: [
+      {
+        input: { s: "()" },
+        expectedOutput: true,
+        description: "Simple pair"
+      },
+      {
+        input: { s: "()[]{}" },
+        expectedOutput: true,
+        description: "Multiple pairs"
+      },
+      {
+        input: { s: "(]" },
+        expectedOutput: false,
+        description: "Mismatched"
+      },
+      {
+        input: { s: "([)]" },
+        expectedOutput: false,
+        description: "Incorrect nesting",
+        hidden: true
+      },
+      {
+        input: { s: "{[]}" },
+        expectedOutput: true,
+        description: "Nested correctly",
+        hidden: true
+      }
+    ],
+    constraints: [
+      "1 <= s.length <= 10^4",
+      "s consists of parentheses only '()[]{}'."
+    ],
+    hints: [
+      "Use a stack data structure",
+      "Push opening brackets onto the stack",
+      "When you see a closing bracket, check if it matches the top of the stack",
+      "The string is valid if the stack is empty at the end"
+    ],
+    validation: {
+      requiredKeywords: ["def", "return"],
+      mustContain: ["isValid"],
+      forbiddenKeywords: ["True", "False"]
+    }
+  }
+];
+
 // Combine all lessons
-export const lessons: Lesson[] = [...aiMlLessons, ...originalLessons];
+export const lessons: Lesson[] = [...aiMlLessons, ...originalLessons, ...codingChallenges];

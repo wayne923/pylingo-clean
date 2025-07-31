@@ -1,32 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import CodeEditor from './CodeEditor';
+import ChallengeLesson from './ChallengeLesson';
 import { usePyodide } from '../hooks/usePyodide';
 import { validateCode } from '../utils/validation';
 import { executionService } from '../services/executionService';
 import { authService } from '../services/authService';
+import { Lesson as LessonType } from '../data/lessons';
 import './Lesson.css';
 
 interface LessonProps {
-  lesson: {
-    id: number;
-    title: string;
-    description: string;
-    initialCode: string;
-    expectedOutput: string;
-    hints: string[];
-    validation: {
-      requiredKeywords?: string[];
-      forbiddenKeywords?: string[];
-      mustContain?: string[];
-      mustNotContain?: string[];
-    };
-    concepts: string[];
-  };
+  lesson: LessonType;
   onComplete: () => void;
   isCompleted: boolean;
 }
 
 const Lesson: React.FC<LessonProps> = ({ lesson, onComplete, isCompleted }) => {
+  // If this is a challenge lesson, render the ChallengeLesson component
+  if (lesson.type === 'challenge') {
+    return (
+      <ChallengeLesson
+        lesson={lesson}
+        onComplete={(lessonId: number) => onComplete()}
+      />
+    );
+  }
+
+  // Otherwise, render the regular tutorial lesson
   const { runPython, isLoading: pyodideLoading, error: pyodideError } = usePyodide();
   const [output, setOutput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
