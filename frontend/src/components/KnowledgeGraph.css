@@ -579,3 +579,13 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   flex-shrink: 0;
 }
+
+/* Enhanced lesson subnodes */
+.skill-node[class*="lesson"] {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.node-group:hover .skill-node {
+  transform: scale(1.05);
+  transition: transform 0.2s ease;
+}

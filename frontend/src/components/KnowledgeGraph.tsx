@@ -56,15 +56,15 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
   const animationRef = useRef<number | null>(null);
 
 
-  // Create subnodes for expanded nodes
+  // Create a simplified preview of lessons for expanded nodes
   const createSubNodes = useCallback((parentNode: GraphNode): GraphNode[] => {
     const subNodes: GraphNode[] = [];
-    const lessonCount = parentNode.lessons.length;
+    const maxSubnodes = 4; // Limit to 4 subnodes maximum
+    const lessonsToShow = parentNode.lessons.slice(0, maxSubnodes);
     
-    // Create subnodes for individual lessons
-    parentNode.lessons.forEach((lesson, index) => {
-      const angle = (index / lessonCount) * 2 * Math.PI;
-      const radius = 80;
+    // Create subnodes for individual lessons in a clean line
+    lessonsToShow.forEach((lesson, index) => {
+      const offsetX = (index - (lessonsToShow.length - 1) / 2) * 60; // Horizontal line
       const subNode: GraphNode = {
         id: `${parentNode.id}-lesson-${lesson.id}`,
         title: lesson.title,
@@ -82,13 +82,40 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
         skillPoints: 10,
         connections: [],
         position: {
-          x: parentNode.position.x + Math.cos(angle) * radius,
-          y: parentNode.position.y + Math.sin(angle) * radius
+          x: parentNode.position.x + offsetX,
+          y: parentNode.position.y + 80 // Fixed distance below parent
         },
-        fixed: false
+        fixed: true // Keep subnodes fixed in position
       };
       subNodes.push(subNode);
     });
+    
+    // Add "more" indicator if there are additional lessons
+    if (parentNode.lessons.length > maxSubnodes) {
+      const moreNode: GraphNode = {
+        id: `${parentNode.id}-more`,
+        title: `+${parentNode.lessons.length - maxSubnodes}`,
+        track: parentNode.track,
+        icon: '📋',
+        description: `${parentNode.lessons.length - maxSubnodes} more lessons`,
+        prerequisites: [],
+        lessons: [],
+        depth: 'foundation',
+        category: 'technical',
+        unlocked: parentNode.unlocked,
+        progress: 0,
+        mastery: 0,
+        estimatedHours: 0,
+        skillPoints: 0,
+        connections: [],
+        position: {
+          x: parentNode.position.x + (maxSubnodes - (maxSubnodes - 1) / 2) * 60,
+          y: parentNode.position.y + 80
+        },
+        fixed: true
+      };
+      subNodes.push(moreNode);
+    }
     
     return subNodes;
   }, [completedLessons]);
@@ -564,19 +591,21 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
                   onMouseEnter={() => setHoveredNode(node)}
                   onMouseLeave={() => setHoveredNode(null)}
                   onClick={(e) => {
-                    console.log('Node clicked:', node.id, 'Lessons:', node.lessons.length);
                     e.stopPropagation();
-                    if (node.lessons.length > 1 && !node.id.includes('-lesson-')) {
+                    if (node.lessons.length > 1 && !node.id.includes('-lesson-') && !node.id.includes('-more')) {
                       // Toggle expansion for main nodes with multiple lessons
                       const newExpanded = new Set(expandedNodes);
                       if (newExpanded.has(node.id)) {
                         newExpanded.delete(node.id);
-                        console.log('Collapsing node:', node.id);
                       } else {
+                        // Only allow one expansion at a time for cleaner UX
+                        newExpanded.clear();
                         newExpanded.add(node.id);
-                        console.log('Expanding node:', node.id);
                       }
                       setExpandedNodes(newExpanded);
+                    } else if (node.id.includes('-lesson-') && node.lessons.length > 0) {
+                      // Click on lesson subnode to start lesson
+                      onStartLesson(node.lessons[0].id, node.lessons[0].track);
                     } else {
                       setSelectedNode(node);
                     }
@@ -588,13 +617,13 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
                 <circle
                   cx={node.position.x}
                   cy={node.position.y}
-                  r={node.id.includes('-lesson-') ? 20 : (30 + (node.mastery * 0.2))}
+                  r={node.id.includes('-lesson-') || node.id.includes('-more') ? 15 : (30 + (node.mastery * 0.2))}
                   className={`skill-node depth-${node.depth} category-${node.category}`}
                   fill={node.unlocked ? `hsl(${node.progress * 1.2}, 70%, 60%)` : '#ccc'}
                   stroke={selectedNode?.id === node.id ? '#333' : '#fff'}
                   strokeWidth={selectedNode?.id === node.id ? 3 : 2}
                   pointerEvents="none"
-                  opacity={node.id.includes('-lesson-') ? 0.8 : 1}
+                  opacity={node.id.includes('-lesson-') || node.id.includes('-more') ? 0.7 : 1}
                 />
                 
                 {/* Node icon */}
@@ -608,41 +637,42 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
                   {node.icon}
                 </text>
                 
-                {/* Node label - fixed positioning */}
+                {/* Node label - better positioning and alignment */}
                 <text
                   x={node.position.x}
-                  y={node.position.y + 45}
+                  y={node.position.y + (node.id.includes('-lesson-') ? 35 : 45)}
                   textAnchor="middle"
                   className="node-label"
                   pointerEvents="none"
-                  dominantBaseline="middle"
+                  dominantBaseline="central"
+                  fontSize={node.id.includes('-lesson-') ? '10' : '12'}
                 >
-                  {node.id.includes('-lesson-') ? 
-                    (node.title.length > 12 ? node.title.substring(0, 12) + '...' : node.title) : 
+                  {node.id.includes('-lesson-') || node.id.includes('-more') ? 
+                    (node.title.length > 10 ? node.title.substring(0, 10) + '...' : node.title) : 
                     node.title
                   }
                 </text>
                 
                 {/* Expansion indicator for nodes with multiple lessons */}
-                {node.lessons.length > 1 && !node.id.includes('-lesson-') && (
+                {node.lessons.length > 1 && !node.id.includes('-lesson-') && !node.id.includes('-more') && (
                   <g>
                     <circle
-                      cx={node.position.x + 25}
-                      cy={node.position.y - 25}
-                      r="10"
-                      fill="rgba(255, 255, 255, 0.9)"
-                      stroke="#4ecdc4"
-                      strokeWidth="2"
+                      cx={node.position.x + 20}
+                      cy={node.position.y - 20}
+                      r="8"
+                      fill="rgba(78, 205, 196, 0.9)"
+                      stroke="#fff"
+                      strokeWidth="1"
                       pointerEvents="none"
                     />
                     <text
-                      x={node.position.x + 25}
-                      y={node.position.y - 21}
+                      x={node.position.x + 20}
+                      y={node.position.y - 17}
                       textAnchor="middle"
                       className="expansion-indicator"
                       pointerEvents="none"
-                      fontSize="14"
-                      fill="#4ecdc4"
+                      fontSize="10"
+                      fill="white"
                       fontWeight="bold"
                     >
                       {expandedNodes.has(node.id) ? '−' : '+'}
