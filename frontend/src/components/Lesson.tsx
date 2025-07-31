@@ -24,17 +24,7 @@ const Lesson: React.FC<LessonProps> = ({ lesson, onComplete, isCompleted }) => {
   const [useDocker, setUseDocker] = useState(false);
   const [dockerAvailable, setDockerAvailable] = useState(false);
 
-  // If this is a challenge lesson, render the ChallengeLesson component
-  if (lesson.type === 'challenge') {
-    return (
-      <ChallengeLesson
-        lesson={lesson}
-        onComplete={(lessonId: number) => onComplete()}
-      />
-    );
-  }
-
-  // Check if lesson should use Docker
+  // Check if lesson should use Docker - moved before conditional return
   useEffect(() => {
     const shouldUseDockerForLesson = executionService.shouldUseDocker(lesson.concepts);
     setUseDocker(shouldUseDockerForLesson);
@@ -46,6 +36,16 @@ const Lesson: React.FC<LessonProps> = ({ lesson, onComplete, isCompleted }) => {
       });
     }
   }, [lesson.concepts]);
+
+  // If this is a challenge lesson, render the ChallengeLesson component
+  if (lesson.type === 'challenge') {
+    return (
+      <ChallengeLesson
+        lesson={lesson}
+        onComplete={(lessonId: number) => onComplete()}
+      />
+    );
+  }
 
   const handleRunCode = async (code: string) => {
     // Check if user is authenticated for Docker lessons
