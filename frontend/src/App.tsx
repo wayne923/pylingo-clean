@@ -16,7 +16,7 @@ import { apiService, ApiLesson } from './services/api';
 import { authService, User } from './services/authService';
 
 function App() {
-  const [currentLessonId, setCurrentLessonId] = useState(1);
+  const [currentLessonId, setCurrentLessonId] = useState(1001); // Start with first algorithms lesson
   const [completedLessons, setCompletedLessons] = useState<Set<number>>(new Set());
   const [apiLessons, setApiLessons] = useState<ApiLesson[]>([]);
   const [useApi, setUseApi] = useState(false);
@@ -33,6 +33,15 @@ function App() {
   const currentLessons = useApi ? apiLessons : lessons;
   const filteredLessons = currentLessons.filter(lesson => lesson.track === selectedTrack);
   const currentLesson = filteredLessons.find(lesson => lesson.id === currentLessonId);
+  
+  // Debug: Log available tracks
+  React.useEffect(() => {
+    const availableTracks = Array.from(new Set(currentLessons.map(lesson => lesson.track)));
+    console.log('Available tracks:', availableTracks);
+    console.log('Current track:', selectedTrack);
+    console.log('useApi:', useApi);
+    console.log('Total lessons:', currentLessons.length);
+  }, [currentLessons, selectedTrack, useApi]);
 
   const handleLessonComplete = (lessonId: number) => {
     setCompletedLessons(prev => new Set([...Array.from(prev), lessonId]));
@@ -201,7 +210,8 @@ function App() {
       const progress = JSON.parse(saved);
       setCompletedLessons(new Set(progress.completed));
       setCurrentLessonId(progress.currentLesson || 1);
-      setUseApi(progress.useApi || false);
+      // Force useApi to false to ensure algorithms track is visible
+      setUseApi(false);
     }
   }, []);
 

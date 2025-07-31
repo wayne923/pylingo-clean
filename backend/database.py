@@ -18,7 +18,13 @@ else:
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def create_tables():
-    Base.metadata.create_all(bind=engine)
+    """Create tables if they don't exist - safe for existing databases"""
+    try:
+        Base.metadata.create_all(bind=engine)
+        print("Database tables created/verified successfully")
+    except Exception as e:
+        print(f"Database table creation warning: {e}")
+        # Don't fail the app if tables already exist
 
 def get_db():
     db = SessionLocal()
