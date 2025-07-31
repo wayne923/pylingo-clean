@@ -28,8 +28,8 @@ interface GraphNode {
   skillPoints: number;
   connections: string[];
   position: { x: number; y: number };
-  velocity?: { x: number; y: number };
-  fixed?: boolean;
+  pathIndex: number;
+  trackName: string;
 }
 
 
@@ -45,26 +45,64 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
   const [viewMode, setViewMode] = useState<'graph' | 'list'>('graph');
   const [searchQuery] = useState('');
   const [selectedPath] = useState<string | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragNode, setDragNode] = useState<GraphNode | null>(null);
-  const [transform] = useState({ x: 0, y: 0, scale: 1 });
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
   const [expandedListItems, setExpandedListItems] = useState<Set<string>>(new Set());
+  const [viewBox] = useState({ x: 0, y: 0, width: 1200, height: 800 });
 
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const animationRef = useRef<number | null>(null);
 
 
-  // Create a simplified preview of lessons for expanded nodes
+  // Create learning paths for journey layout
+  const createLearningPaths = useCallback(() => {
+    const paths = {
+      'foundation': {
+        color: '#4ecdc4',
+        curve: (t: number) => ({
+          x: 100 + t * 1000,
+          y: 400 + Math.sin(t * Math.PI * 0.5) * 100
+        })
+      },
+      'core': {
+        color: '#45b7d1', 
+        curve: (t: number) => ({
+          x: 150 + t * 900,
+          y: 300 + Math.sin(t * Math.PI * 0.7) * 80
+        })
+      },
+      'advanced': {
+        color: '#96ceb4',
+        curve: (t: number) => ({
+          x: 200 + t * 800,
+          y: 200 + Math.sin(t * Math.PI * 0.8) * 60
+        })
+      },
+      'mastery': {
+        color: '#feca57',
+        curve: (t: number) => ({
+          x: 250 + t * 700,
+          y: 150 + Math.sin(t * Math.PI * 0.9) * 40
+        })
+      },
+      'expert': {
+        color: '#ff6b6b',
+        curve: (t: number) => ({
+          x: 300 + t * 600,
+          y: 100 + Math.sin(t * Math.PI) * 30
+        })
+      }
+    };
+    return paths;
+  }, []);
+
+  // Create expanded lesson nodes along a mini-path
   const createSubNodes = useCallback((parentNode: GraphNode): GraphNode[] => {
     const subNodes: GraphNode[] = [];
-    const maxSubnodes = 4; // Limit to 4 subnodes maximum
+    const maxSubnodes = 4;
     const lessonsToShow = parentNode.lessons.slice(0, maxSubnodes);
     
-    // Create subnodes for individual lessons in a clean line
     lessonsToShow.forEach((lesson, index) => {
-      const offsetX = (index - (lessonsToShow.length - 1) / 2) * 60; // Horizontal line
+      const offsetX = (index * 80) - ((lessonsToShow.length - 1) * 40);
       const subNode: GraphNode = {
         id: `${parentNode.id}-lesson-${lesson.id}`,
         title: lesson.title,
@@ -83,14 +121,14 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
         connections: [],
         position: {
           x: parentNode.position.x + offsetX,
-          y: parentNode.position.y + 80 // Fixed distance below parent
+          y: parentNode.position.y + 100
         },
-        fixed: true // Keep subnodes fixed in position
+        pathIndex: -1,
+        trackName: parentNode.trackName
       };
       subNodes.push(subNode);
     });
     
-    // Add "more" indicator if there are additional lessons
     if (parentNode.lessons.length > maxSubnodes) {
       const moreNode: GraphNode = {
         id: `${parentNode.id}-more`,
@@ -109,10 +147,11 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
         skillPoints: 0,
         connections: [],
         position: {
-          x: parentNode.position.x + (maxSubnodes - (maxSubnodes - 1) / 2) * 60,
-          y: parentNode.position.y + 80
+          x: parentNode.position.x + (maxSubnodes * 40),
+          y: parentNode.position.y + 100
         },
-        fixed: true
+        pathIndex: -1,
+        trackName: parentNode.trackName
       };
       subNodes.push(moreNode);
     }
@@ -120,11 +159,12 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
     return subNodes;
   }, [completedLessons]);
 
-  // Create knowledge graph nodes
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Create knowledge graph nodes with journey path positioning
   const createGraphNodes = useCallback((): GraphNode[] => {
+    const paths = createLearningPaths();
+    
     const graphNodes: GraphNode[] = [
-      // Foundation Layer
+      // Foundation Path - Starting point
       {
         id: 'python-basics',
         title: 'Python Core',
@@ -141,11 +181,12 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
         estimatedHours: 20,
         skillPoints: 100,
         connections: ['data-structures', 'algorithms-intro', 'web-basics'],
-        position: { x: 400, y: 300 },
-        fixed: false
+        position: paths.foundation.curve(0),
+        pathIndex: 0,
+        trackName: 'Foundation'
       },
       
-      // Core Layer
+      // Core Path - Second tier
       {
         id: 'data-structures',
         title: 'Data Structures',
@@ -161,8 +202,10 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
         mastery: 0,
         estimatedHours: 15,
         skillPoints: 80,
-        connections: ['python-basics', 'algorithms-intro', 'numpy-pandas'],
-        position: { x: 300, y: 200 }
+        connections: ['python-basics', 'numpy-pandas'],
+        position: paths.core.curve(0.2),
+        pathIndex: 1,
+        trackName: 'Core Skills'
       },
       
       {
@@ -180,8 +223,10 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
         mastery: 0,
         estimatedHours: 25,
         skillPoints: 120,
-        connections: ['python-basics', 'data-structures', 'ml-basics'],
-        position: { x: 500, y: 200 }
+        connections: ['python-basics', 'ml-basics'],
+        position: paths.core.curve(0.6),
+        pathIndex: 2,
+        trackName: 'Core Skills'
       },
       
       {
@@ -199,11 +244,13 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
         mastery: 0,
         estimatedHours: 30,
         skillPoints: 150,
-        connections: ['python-basics', 'databases', 'deployment'],
-        position: { x: 600, y: 350 }
+        connections: ['python-basics'],
+        position: paths.foundation.curve(0.7),
+        pathIndex: 3,
+        trackName: 'Foundation'
       },
       
-      // Advanced Layer
+      // Advanced Path - Third tier
       {
         id: 'numpy-pandas',
         title: 'Data Science Tools',
@@ -219,8 +266,10 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
         mastery: 0,
         estimatedHours: 40,
         skillPoints: 200,
-        connections: ['data-structures', 'data-analysis', 'ml-basics'],
-        position: { x: 200, y: 150 }
+        connections: ['data-structures', 'ml-basics'],
+        position: paths.advanced.curve(0.3),
+        pathIndex: 4,
+        trackName: 'Advanced'
       },
       
       {
@@ -239,10 +288,12 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
         estimatedHours: 60,
         skillPoints: 300,
         connections: ['algorithms-intro', 'numpy-pandas', 'deep-learning'],
-        position: { x: 350, y: 100 }
+        position: paths.advanced.curve(0.7),
+        pathIndex: 5,
+        trackName: 'Advanced'
       },
       
-      // Mastery Layer
+      // Mastery Path - Fourth tier
       {
         id: 'deep-learning',
         title: 'Deep Learning',
@@ -259,9 +310,12 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
         estimatedHours: 80,
         skillPoints: 400,
         connections: ['ml-basics', 'llm-mastery'],
-        position: { x: 250, y: 50 }
+        position: paths.mastery.curve(0.4),
+        pathIndex: 6,
+        trackName: 'Mastery'
       },
       
+      // Expert Path - Final tier
       {
         id: 'llm-mastery',
         title: 'LLM Development',
@@ -278,7 +332,9 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
         estimatedHours: 100,
         skillPoints: 500,
         connections: ['deep-learning'],
-        position: { x: 150, y: 0 }
+        position: paths.expert.curve(0.5),
+        pathIndex: 7,
+        trackName: 'Expert'
       }
     ];
 
@@ -324,152 +380,46 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
         nextLesson
       };
     });
-  }, [lessons, completedLessons, expandedNodes, createSubNodes]);
+  }, [lessons, completedLessons, expandedNodes, createSubNodes, createLearningPaths]);
 
   // Initialize nodes
   useEffect(() => {
     setNodes(createGraphNodes());
   }, [createGraphNodes]);
 
-  // Physics simulation for force-directed layout
-  const updateForces = useCallback(() => {
-    if (viewMode !== 'graph') return;
-
-    setNodes(prevNodes => {
-      const newNodes = [...prevNodes];
-      const center = { x: 400, y: 300 };
-      const repulsion = 150; // Increased for better spacing
-      const attraction = 0.02; // Slightly increased for better connections
-      const damping = 0.85; // Reduced for more stable movement
-      const minDistance = 120; // Minimum distance between nodes
-
-      // Initialize velocities if not present
-      newNodes.forEach(node => {
-        if (!node.velocity) {
-          node.velocity = { x: 0, y: 0 };
-        }
-      });
-
-      // Apply forces
-      for (let i = 0; i < newNodes.length; i++) {
-        const node = newNodes[i];
-        if (node.fixed) continue;
-
-        let fx = 0, fy = 0;
-
-        // Repulsion from other nodes
-        for (let j = 0; j < newNodes.length; j++) {
-          if (i === j) continue;
-          const other = newNodes[j];
-          const dx = node.position.x - other.position.x;
-          const dy = node.position.y - other.position.y;
-          const distance = Math.sqrt(dx * dx + dy * dy) || 1;
-          
-          if (distance < minDistance * 2) {
-            const force = repulsion / Math.max(distance * distance, 10);
-            fx += (dx / distance) * force;
-            fy += (dy / distance) * force;
-          }
-        }
-
-        // Attraction to connected nodes
-        node.connections.forEach(connId => {
-          const connected = newNodes.find(n => n.id === connId);
-          if (connected) {
-            const dx = connected.position.x - node.position.x;
-            const dy = connected.position.y - node.position.y;
-            const distance = Math.sqrt(dx * dx + dy * dy) || 1;
-            
-            // Ideal distance for connected nodes
-            const idealDistance = minDistance * 1.5;
-            const force = (distance - idealDistance) * attraction;
-            
-            fx += (dx / distance) * force;
-            fy += (dy / distance) * force;
-          }
-        });
-
-        // Spring force toward center (weaker)
-        const centerDx = center.x - node.position.x;
-        const centerDy = center.y - node.position.y;
-        const centerDistance = Math.sqrt(centerDx * centerDx + centerDy * centerDy);
-        if (centerDistance > 250) {
-          fx += centerDx * 0.0005;
-          fy += centerDy * 0.0005;
-        }
-
-        // Update velocity and position with better constraints
-        node.velocity!.x = (node.velocity!.x + fx) * damping;
-        node.velocity!.y = (node.velocity!.y + fy) * damping;
-        
-        // Limit velocity to prevent erratic movement
-        const maxVelocity = 5;
-        const velocityMagnitude = Math.sqrt(node.velocity!.x * node.velocity!.x + node.velocity!.y * node.velocity!.y);
-        if (velocityMagnitude > maxVelocity) {
-          node.velocity!.x = (node.velocity!.x / velocityMagnitude) * maxVelocity;
-          node.velocity!.y = (node.velocity!.y / velocityMagnitude) * maxVelocity;
-        }
-        
-        node.position.x += node.velocity!.x;
-        node.position.y += node.velocity!.y;
-
-        // Keep within bounds with padding
-        const padding = 80;
-        node.position.x = Math.max(padding, Math.min(800 - padding, node.position.x));
-        node.position.y = Math.max(padding, Math.min(600 - padding, node.position.y));
-      }
-
-      return newNodes;
-    });
-  }, [viewMode]);
-
-  // Animation loop
-  useEffect(() => {
-    if (viewMode === 'graph') {
-      const animate = () => {
-        updateForces();
-        animationRef.current = requestAnimationFrame(animate);
-      };
-      animationRef.current = requestAnimationFrame(animate);
-    }
-
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
-  }, [viewMode, updateForces]);
-
-  // Mouse handlers for dragging
-  const handleMouseDown = (node: GraphNode, event: React.MouseEvent) => {
-    event.preventDefault();
-    setIsDragging(true);
-    setDragNode(node);
-    node.fixed = true;
+  // Generate smooth SVG path for journey connections
+  const generateConnectionPath = (from: GraphNode, to: GraphNode): string => {
+    const dx = to.position.x - from.position.x;
+    
+    // Create a curved path with control points
+    const controlX1 = from.position.x + dx * 0.5;
+    const controlY1 = from.position.y;
+    const controlX2 = to.position.x - dx * 0.5;
+    const controlY2 = to.position.y;
+    
+    return `M ${from.position.x} ${from.position.y} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${to.position.x} ${to.position.y}`;
   };
 
-  const handleMouseMove = (event: React.MouseEvent) => {
-    if (isDragging && dragNode && svgRef.current) {
-      const rect = svgRef.current.getBoundingClientRect();
-      const x = (event.clientX - rect.left) / transform.scale - transform.x;
-      const y = (event.clientY - rect.top) / transform.scale - transform.y;
-      
-      setNodes(prevNodes => 
-        prevNodes.map(node => 
-          node.id === dragNode.id 
-            ? { ...node, position: { x, y } }
-            : node
-        )
-      );
+  // Handle node interactions
+  const handleNodeClick = (node: GraphNode, event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (node.lessons.length > 1 && !node.id.includes('-lesson-') && !node.id.includes('-more')) {
+      // Toggle expansion for main nodes with multiple lessons
+      const newExpanded = new Set(expandedNodes);
+      if (newExpanded.has(node.id)) {
+        newExpanded.delete(node.id);
+      } else {
+        // Only allow one expansion at a time for cleaner UX
+        newExpanded.clear();
+        newExpanded.add(node.id);
+      }
+      setExpandedNodes(newExpanded);
+    } else if (node.id.includes('-lesson-') && node.lessons.length > 0) {
+      // Click on lesson subnode to start lesson
+      onStartLesson(node.lessons[0].id, node.lessons[0].track);
+    } else {
+      setSelectedNode(node);
     }
-  };
-
-  const handleMouseUp = () => {
-    if (dragNode) {
-      dragNode.fixed = false;
-    }
-    setIsDragging(false);
-    setDragNode(null);
   };
 
   // Filter nodes based on search
@@ -549,32 +499,80 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
           <svg 
             ref={svgRef}
             className="knowledge-graph-svg"
-            viewBox="0 0 800 600"
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
+            viewBox={`${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`}
           >
-          {/* Connections */}
-          <g className="connections">
+          {/* SVG Definitions for gradients and effects */}
+          <defs>
+            <linearGradient id="technicalGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#4ecdc4" />
+              <stop offset="100%" stopColor="#44b3aa" />
+            </linearGradient>
+            <linearGradient id="practicalGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#45b7d1" />
+              <stop offset="100%" stopColor="#3498db" />
+            </linearGradient>
+            <linearGradient id="theoreticalGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#96ceb4" />
+              <stop offset="100%" stopColor="#74b49b" />
+            </linearGradient>
+            <linearGradient id="projectGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#feca57" />
+              <stop offset="100%" stopColor="#ff9f43" />
+            </linearGradient>
+            <filter id="glowEffect">
+              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+              <feMerge> 
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+          {/* Journey Path Lines */}
+          <g className="journey-paths">
             {filteredNodes.map(node => 
               node.connections.map(connId => {
                 const connectedNode = nodes.find(n => n.id === connId);
-                if (!connectedNode) return null;
+                if (!connectedNode || node.id.includes('-lesson-')) return null;
                 
                 return (
-                  <line
-                    key={`${node.id}-${connId}`}
-                    x1={node.position.x}
-                    y1={node.position.y}
-                    x2={connectedNode.position.x}
-                    y2={connectedNode.position.y}
-                    className={`connection ${selectedPath ? 'dimmed' : ''}`}
-                    strokeWidth="2"
-                    stroke={node.unlocked && connectedNode.unlocked ? '#ddd' : '#f0f0f0'}
+                  <path
+                    key={`path-${node.id}-${connId}`}
+                    d={generateConnectionPath(node, connectedNode)}
+                    className={`journey-connection ${selectedPath ? 'dimmed' : ''}`}
+                    stroke={node.unlocked && connectedNode.unlocked ? '#4ecdc4' : '#ddd'}
+                    strokeWidth="3"
+                    strokeDasharray={connectedNode.unlocked ? '0' : '8,4'}
+                    fill="none"
+                    opacity={node.unlocked ? 0.8 : 0.3}
                   />
                 );
               })
             )}
+          </g>
+          
+          {/* Track Background Paths */}
+          <g className="track-backgrounds">
+            {Object.entries(createLearningPaths()).map(([trackName, pathData]) => {
+              const pathPoints = [];
+              for (let t = 0; t <= 1; t += 0.02) {
+                pathPoints.push(pathData.curve(t));
+              }
+              const pathString = pathPoints.map((p, i) => 
+                i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`
+              ).join(' ');
+              
+              return (
+                <path
+                  key={`track-${trackName}`}
+                  d={pathString}
+                  stroke={pathData.color}
+                  strokeWidth="6"
+                  fill="none"
+                  opacity="0.2"
+                  strokeLinecap="round"
+                />
+              );
+            })}
           </g>
 
           {/* Nodes */}
@@ -587,30 +585,10 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
                   cy={node.position.y}
                   r={45}
                   fill="transparent"
-                  onMouseDown={(e) => handleMouseDown(node, e)}
                   onMouseEnter={() => setHoveredNode(node)}
                   onMouseLeave={() => setHoveredNode(null)}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (node.lessons.length > 1 && !node.id.includes('-lesson-') && !node.id.includes('-more')) {
-                      // Toggle expansion for main nodes with multiple lessons
-                      const newExpanded = new Set(expandedNodes);
-                      if (newExpanded.has(node.id)) {
-                        newExpanded.delete(node.id);
-                      } else {
-                        // Only allow one expansion at a time for cleaner UX
-                        newExpanded.clear();
-                        newExpanded.add(node.id);
-                      }
-                      setExpandedNodes(newExpanded);
-                    } else if (node.id.includes('-lesson-') && node.lessons.length > 0) {
-                      // Click on lesson subnode to start lesson
-                      onStartLesson(node.lessons[0].id, node.lessons[0].track);
-                    } else {
-                      setSelectedNode(node);
-                    }
-                  }}
-                  style={{ cursor: node.lessons.length > 1 && !node.id.includes('-lesson-') ? 'pointer' : (isDragging ? 'grabbing' : 'grab') }}
+                  onClick={(e) => handleNodeClick(node, e)}
+                  style={{ cursor: 'pointer' }}
                 />
                 
                 {/* Visible node circle */}
@@ -618,8 +596,8 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
                   cx={node.position.x}
                   cy={node.position.y}
                   r={node.id.includes('-lesson-') || node.id.includes('-more') ? 15 : (30 + (node.mastery * 0.2))}
-                  className={`skill-node depth-${node.depth} category-${node.category}`}
-                  fill={node.unlocked ? `hsl(${node.progress * 1.2}, 70%, 60%)` : '#ccc'}
+                  className={`skill-node depth-${node.depth} category-${node.category} journey-node ${node.unlocked ? 'unlocked' : 'locked'} ${node.progress === 100 ? 'completed' : ''}`}
+                  fill={node.unlocked ? undefined : '#ccc'}
                   stroke={selectedNode?.id === node.id ? '#333' : '#fff'}
                   strokeWidth={selectedNode?.id === node.id ? 3 : 2}
                   pointerEvents="none"
@@ -774,6 +752,33 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
                 )}
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Journey Path Legend */}
+        {viewMode === 'graph' && (
+          <div className="journey-legend">
+            <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem' }}>Learning Paths</h4>
+            <div className="legend-item">
+              <div className="legend-color" style={{ backgroundColor: '#4ecdc4' }}></div>
+              <span>Foundation Track</span>
+            </div>
+            <div className="legend-item">
+              <div className="legend-color" style={{ backgroundColor: '#45b7d1' }}></div>
+              <span>Core Skills</span>
+            </div>
+            <div className="legend-item">
+              <div className="legend-color" style={{ backgroundColor: '#96ceb4' }}></div>
+              <span>Advanced</span>
+            </div>
+            <div className="legend-item">
+              <div className="legend-color" style={{ backgroundColor: '#feca57' }}></div>
+              <span>Mastery</span>
+            </div>
+            <div className="legend-item">
+              <div className="legend-color" style={{ backgroundColor: '#ff6b6b' }}></div>
+              <span>Expert</span>
+            </div>
           </div>
         )}
 

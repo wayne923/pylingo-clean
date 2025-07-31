@@ -94,14 +94,11 @@
 .knowledge-graph-svg {
   width: 100%;
   height: 100%;
-  cursor: grab;
+  cursor: default;
+  overflow: visible;
 }
 
-.knowledge-graph-svg:active {
-  cursor: grabbing;
-}
-
-/* Connections */
+/* Legacy Connections - now replaced by journey paths */
 .connections .connection {
   stroke: #ddd;
   stroke-width: 2;
@@ -130,17 +127,13 @@
 
 .skill-node {
   transition: all 0.3s ease;
-  cursor: grab;
+  cursor: pointer;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
 }
 
 .skill-node:hover {
   transform: scale(1.1);
   filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3));
-}
-
-.skill-node:active {
-  cursor: grabbing;
 }
 
 /* Node depth styling */
@@ -580,12 +573,105 @@
   flex-shrink: 0;
 }
 
-/* Enhanced lesson subnodes */
+/* Enhanced lesson subnodes for journey paths */
 .skill-node[class*="lesson"] {
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  r: 18;
 }
 
 .node-group:hover .skill-node {
   transform: scale(1.05);
   transition: transform 0.2s ease;
+}
+
+/* Journey Path Specific Styles */
+.track-backgrounds path {
+  transition: all 0.5s ease;
+}
+
+.journey-paths .journey-connection {
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.journey-paths .journey-connection.dimmed {
+  opacity: 0.2;
+}
+
+.journey-paths .journey-connection:hover {
+  stroke-width: 4;
+  filter: drop-shadow(0 4px 8px rgba(78, 205, 196, 0.3));
+}
+
+/* Journey Path Animations */
+@keyframes pathGlow {
+  0%, 100% { filter: drop-shadow(0 0 5px rgba(78, 205, 196, 0.3)); }
+  50% { filter: drop-shadow(0 0 15px rgba(78, 205, 196, 0.6)); }
+}
+
+.journey-connection.active {
+  animation: pathGlow 2s ease-in-out infinite;
+}
+
+/* Journey Node Specific Styling */
+.skill-node.journey-node {
+  stroke-width: 3;
+  stroke: white;
+}
+
+.skill-node.unlocked {
+  animation: nodeUnlock 0.5s ease-out;
+}
+
+@keyframes nodeUnlock {
+  0% { 
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Journey Path Legends */
+.journey-legend {
+  position: absolute;
+  bottom: 2rem;
+  left: 2rem;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 1rem;
+  color: white;
+  font-size: 0.9rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.legend-color {
+  width: 20px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+/* Celebration effects for completed nodes */
+.skill-node.completed {
+  animation: completionCelebration 0.6s ease-out;
+}
+
+@keyframes completionCelebration {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.2) rotate(5deg); }
+  50% { transform: scale(1.1) rotate(-3deg); }
+  75% { transform: scale(1.05) rotate(1deg); }
+  100% { transform: scale(1) rotate(0deg); }
 }
