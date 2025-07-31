@@ -15,6 +15,15 @@ interface LessonProps {
 }
 
 const Lesson: React.FC<LessonProps> = ({ lesson, onComplete, isCompleted }) => {
+  // All hooks must be called at the top level
+  const { runPython, isLoading: pyodideLoading, error: pyodideError } = usePyodide();
+  const [output, setOutput] = useState('');
+  const [isRunning, setIsRunning] = useState(false);
+  const [showHints, setShowHints] = useState(false);
+  const [validationMessage, setValidationMessage] = useState('');
+  const [useDocker, setUseDocker] = useState(false);
+  const [dockerAvailable, setDockerAvailable] = useState(false);
+
   // If this is a challenge lesson, render the ChallengeLesson component
   if (lesson.type === 'challenge') {
     return (
@@ -24,15 +33,6 @@ const Lesson: React.FC<LessonProps> = ({ lesson, onComplete, isCompleted }) => {
       />
     );
   }
-
-  // Otherwise, render the regular tutorial lesson
-  const { runPython, isLoading: pyodideLoading, error: pyodideError } = usePyodide();
-  const [output, setOutput] = useState('');
-  const [isRunning, setIsRunning] = useState(false);
-  const [showHints, setShowHints] = useState(false);
-  const [validationMessage, setValidationMessage] = useState('');
-  const [useDocker, setUseDocker] = useState(false);
-  const [dockerAvailable, setDockerAvailable] = useState(false);
 
   // Check if lesson should use Docker
   useEffect(() => {
