@@ -249,7 +249,7 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
         nextLesson
       };
     });
-  }, [lessons, completedLessons, expandedNodes]);
+  }, [lessons, completedLessons]);
 
   // Initialize nodes
   useEffect(() => {
