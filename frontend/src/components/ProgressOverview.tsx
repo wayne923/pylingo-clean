@@ -96,8 +96,8 @@ const ProgressOverview: React.FC<ProgressOverviewProps> = ({
         title: 'Algorithm Explorer',
         description: 'Complete 3 algorithm challenges',
         icon: '🧩',
-        earned: trackProgress.find(t => t.track === 'algorithms')?.completed >= 3 || false,
-        progress: Math.min(trackProgress.find(t => t.track === 'algorithms')?.completed || 0, 3),
+        earned: (trackProgress.find(t => t.track === 'algorithms')?.completed ?? 0) >= 3 || false,
+        progress: Math.min(trackProgress.find(t => t.track === 'algorithms')?.completed ?? 0, 3),
         target: 3
       },
       {
@@ -105,7 +105,7 @@ const ProgressOverview: React.FC<ProgressOverviewProps> = ({
         title: 'Data Scientist',
         description: 'Complete 5 data science lessons',
         icon: '🔬',
-        earned: trackProgress.find(t => t.track === 'data-science')?.completed >= 5 || false,
+        earned: (trackProgress.find(t => t.track === 'data-science')?.completed ?? 0) >= 5 || false,
         progress: Math.min(trackProgress.find(t => t.track === 'data-science')?.completed || 0, 5),
         target: 5
       },
@@ -114,7 +114,7 @@ const ProgressOverview: React.FC<ProgressOverviewProps> = ({
         title: 'Web Builder',
         description: 'Complete 3 web development lessons',
         icon: '🏗️',
-        earned: trackProgress.find(t => t.track === 'web-development')?.completed >= 3 || false,
+        earned: (trackProgress.find(t => t.track === 'web-development')?.completed ?? 0) >= 3 || false,
         progress: Math.min(trackProgress.find(t => t.track === 'web-development')?.completed || 0, 3),
         target: 3
       },
@@ -123,7 +123,7 @@ const ProgressOverview: React.FC<ProgressOverviewProps> = ({
         title: 'AI Pioneer',
         description: 'Complete 3 AI/ML lessons',
         icon: '🤖',
-        earned: trackProgress.find(t => t.track === 'ai-ml')?.completed >= 3 || false,
+        earned: (trackProgress.find(t => t.track === 'ai-ml')?.completed ?? 0) >= 3 || false,
         progress: Math.min(trackProgress.find(t => t.track === 'ai-ml')?.completed || 0, 3),
         target: 3
       },
