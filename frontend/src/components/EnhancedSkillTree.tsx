@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useRef } from 'react';
 import { UserPreferences } from '../services/authService';
 import { Lesson } from '../data/lessons';
 import './EnhancedSkillTree.css';
@@ -53,9 +53,7 @@ const EnhancedSkillTree: React.FC<EnhancedSkillTreeProps> = ({
   const [viewMode, setViewMode] = useState<'tree' | 'constellation' | 'roadmap' | 'focus'>('constellation');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
-  const [animationSpeed, setAnimationSpeed] = useState(1);
-  const [zoomLevel, setZoomLevel] = useState(1);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [centerNode, setCenterNode] = useState<string>('python-basics');
   
   const svgRef = useRef<SVGSVGElement>(null);

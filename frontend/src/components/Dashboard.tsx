@@ -47,7 +47,6 @@ const Dashboard: React.FC<DashboardProps> = ({
     
     if (!userPreferences) return `${timeGreeting}, ${user.username}!`;
     
-    const skillLevel = userPreferences.skill_level || 'beginner';
     const primaryGoal = userPreferences.goals?.[0] || 'general learning';
     
     return `${timeGreeting}, ${user.username}! Ready to level up your ${primaryGoal} skills?`;
