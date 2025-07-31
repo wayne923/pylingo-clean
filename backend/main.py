@@ -19,10 +19,15 @@ allowed_origins = ["http://localhost:3000"]
 if os.getenv("ENVIRONMENT") == "production":
     # Allow Railway and Netlify domains
     allowed_origins = [
-        "https://*.netlify.app",
-        "https://*.railway.app", 
+        "https://gleeful-concha-992e6b.netlify.app",
+        "https://pylingo-clean-production.up.railway.app", 
+        "http://localhost:3000"
+    ]
+else:
+    # For development, be more permissive
+    allowed_origins = [
         "http://localhost:3000",
-        "*"  # Temporarily allow all origins for testing
+        "https://gleeful-concha-992e6b.netlify.app"
     ]
 
 app.add_middleware(
