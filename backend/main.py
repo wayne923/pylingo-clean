@@ -16,8 +16,13 @@ import os
 # Configure CORS for production
 allowed_origins = ["http://localhost:3000"]
 if os.getenv("ENVIRONMENT") == "production":
-    domain = os.getenv("DOMAIN", "localhost")
-    allowed_origins = [f"https://{domain}", f"http://{domain}"]
+    # Allow Railway and Netlify domains
+    allowed_origins = [
+        "https://*.netlify.app",
+        "https://*.railway.app", 
+        "http://localhost:3000",
+        "*"  # Temporarily allow all origins for testing
+    ]
 
 app.add_middleware(
     CORSMiddleware,
