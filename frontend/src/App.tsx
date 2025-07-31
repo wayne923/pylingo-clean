@@ -84,6 +84,57 @@ function App() {
     setShowEnhancedAuth(true);
   };
 
+  const loadUserPreferences = async () => {
+    try {
+      const preferences = await authService.getUserPreferences();
+      if (preferences) {
+        // Set user level display
+        if (preferences.skill_level === 'advanced') {
+          setUserLevel('Expert');
+        } else if (preferences.skill_level === 'intermediate') {
+          setUserLevel('Intermediate');
+        } else {
+          setUserLevel('Beginner');
+        }
+        
+        // Determine the best track and starting lesson based on goals and skill level
+        const { track, lessonId } = getRecommendedTrackAndLesson(preferences);
+        setSelectedTrack(track);
+        setCurrentLessonId(lessonId);
+        
+        console.log(`Set track to "${track}" starting at lesson ${lessonId} based on:`, {
+          skillLevel: preferences.skill_level,
+          goals: preferences.goals,
+          experience: preferences.experience
+        });
+      } else {
+        // No preferences found, try localStorage as fallback
+        const userData = localStorage.getItem('userPreferences');
+        if (userData) {
+          const legacyPreferences = JSON.parse(userData);
+          
+          // Set user level display
+          if (legacyPreferences.skillLevel === 'advanced') {
+            setUserLevel('Expert');
+          } else if (legacyPreferences.skillLevel === 'intermediate') {
+            setUserLevel('Intermediate');
+          } else {
+            setUserLevel('Beginner');
+          }
+          
+          // Determine the best track and starting lesson based on goals and skill level
+          const { track, lessonId } = getRecommendedTrackAndLesson(legacyPreferences);
+          setSelectedTrack(track);
+          setCurrentLessonId(lessonId);
+          
+          console.log('Loaded preferences from localStorage fallback');
+        }
+      }
+    } catch (error) {
+      console.error('Error loading user preferences:', error);
+    }
+  };
+
   const handleAuthSuccess = () => {
     setShowLandingPage(false);
     setShowEnhancedAuth(false);
@@ -92,37 +143,16 @@ function App() {
     const authenticatedUser = authService.getUser();
     if (authenticatedUser) {
       setUser(authenticatedUser);
-    }
-    
-    // Update user level and set appropriate track based on assessment results
-    const userData = localStorage.getItem('userPreferences');
-    if (userData) {
-      const preferences = JSON.parse(userData);
       
-      // Set user level display
-      if (preferences.skillLevel === 'advanced') {
-        setUserLevel('Expert');
-      } else if (preferences.skillLevel === 'intermediate') {
-        setUserLevel('Intermediate');
-      } else {
-        setUserLevel('Beginner');
-      }
-      
-      // Determine the best track and starting lesson based on goals and skill level
-      const { track, lessonId } = getRecommendedTrackAndLesson(preferences);
-      setSelectedTrack(track);
-      setCurrentLessonId(lessonId);
-      
-      console.log(`Set track to "${track}" starting at lesson ${lessonId} based on:`, {
-        skillLevel: preferences.skillLevel,
-        goals: preferences.goals,
-        experience: preferences.experience
-      });
+      // Load user preferences from backend
+      loadUserPreferences();
     }
   };
 
   const getRecommendedTrackAndLesson = (preferences: any) => {
-    const { skillLevel, goals } = preferences;
+    // Handle both old (localStorage) and new (backend) preference formats
+    const skillLevel = preferences.skill_level || preferences.skillLevel;
+    const goals = preferences.goals;
     
     // Priority order for track selection based on goals
     if (goals.includes('ai-ml')) {
@@ -158,34 +188,8 @@ function App() {
       setUser(currentUser);
       setShowLandingPage(false); // Hide landing page if already logged in
       
-      // Load user preferences for level and track selection
-      const userData = localStorage.getItem('userPreferences');
-      if (userData) {
-        try {
-          const preferences = JSON.parse(userData);
-          
-          // Set user level
-          if (preferences.skillLevel === 'advanced') {
-            setUserLevel('Expert');
-          } else if (preferences.skillLevel === 'intermediate') {
-            setUserLevel('Intermediate');
-          } else {
-            setUserLevel('Beginner');
-          }
-          
-          // Set appropriate track and lesson based on preferences
-          const { track, lessonId } = getRecommendedTrackAndLesson(preferences);
-          setSelectedTrack(track);
-          setCurrentLessonId(lessonId);
-          
-          console.log(`Loaded track "${track}" starting at lesson ${lessonId} from saved preferences`);
-        } catch (error) {
-          console.error('Error loading user preferences:', error);
-          // Fall back to beginner track
-          setSelectedTrack('beginner');
-          setCurrentLessonId(1);
-        }
-      }
+      // Load user preferences from backend
+      loadUserPreferences();
     }
   }, []);
 

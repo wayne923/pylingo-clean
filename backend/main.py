@@ -3,8 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List
 from database import get_db, create_tables
-from models import Track, Lesson, UserProgress, User
-from schemas import UserCreate, UserResponse, UserLogin, Token, UserProgressCreate, UserProgressResponse, LessonCreate, LessonResponse
+from models import Track, Lesson, UserProgress, User, UserPreferences
+from schemas import UserCreate, UserResponse, UserLogin, Token, UserProgressCreate, UserProgressResponse, LessonCreate, LessonResponse, UserPreferencesCreate, UserPreferencesUpdate, UserPreferencesResponse
 from auth import authenticate_user, create_access_token, get_current_user, get_password_hash, get_user_by_username, get_user_by_email
 from docker_executor import docker_executor
 from datetime import timedelta, datetime
@@ -369,6 +369,72 @@ async def health_check():
     """Health check endpoint for load balancers"""
     return {"status": "healthy", "timestamp": datetime.utcnow()}
 
+# User Preferences endpoints
+@app.post("/api/preferences", response_model=UserPreferencesResponse)
+async def save_user_preferences(
+    preferences: UserPreferencesCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Save or update user preferences"""
+    # Check if preferences already exist
+    existing_prefs = db.query(UserPreferences).filter(UserPreferences.user_id == current_user.id).first()
+    
+    if existing_prefs:
+        # Update existing preferences
+        for field, value in preferences.dict(exclude_unset=True).items():
+            setattr(existing_prefs, field, value)
+        existing_prefs.updated_at = datetime.utcnow()
+        db.commit()
+        db.refresh(existing_prefs)
+        return existing_prefs
+    else:
+        # Create new preferences
+        db_preferences = UserPreferences(
+            user_id=current_user.id,
+            **preferences.dict()
+        )
+        db.add(db_preferences)
+        db.commit()
+        db.refresh(db_preferences)
+        return db_preferences
+
+@app.get("/api/preferences", response_model=UserPreferencesResponse)
+async def get_user_preferences(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get user preferences"""
+    preferences = db.query(UserPreferences).filter(UserPreferences.user_id == current_user.id).first()
+    
+    if not preferences:
+        # Return default preferences if none exist
+        raise HTTPException(status_code=404, detail="User preferences not found")
+    
+    return preferences
+
+@app.put("/api/preferences", response_model=UserPreferencesResponse)
+async def update_user_preferences(
+    preferences: UserPreferencesUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update user preferences"""
+    db_preferences = db.query(UserPreferences).filter(UserPreferences.user_id == current_user.id).first()
+    
+    if not db_preferences:
+        raise HTTPException(status_code=404, detail="User preferences not found")
+    
+    # Update only provided fields
+    for field, value in preferences.dict(exclude_unset=True).items():
+        if value is not None:
+            setattr(db_preferences, field, value)
+    
+    db_preferences.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(db_preferences)
+    return db_preferences
+
 @app.get("/api/admin/database-info")
 async def get_database_info(db: Session = Depends(get_db)):
     """Simple admin endpoint to view database contents"""
@@ -384,13 +450,17 @@ async def get_database_info(db: Session = Depends(get_db)):
         # Count progress entries
         progress_count = db.query(UserProgress).count()
         
+        # Count preferences
+        preferences_count = db.query(UserPreferences).count()
+        
         return {
             "database_type": "SQLite" if "sqlite" in str(db.bind.url) else "PostgreSQL",
             "stats": {
                 "users": user_count,
                 "lessons": lesson_count,
                 "tracks": track_count,
-                "user_progress": progress_count
+                "user_progress": progress_count,
+                "user_preferences": preferences_count
             },
             "recent_users": [
                 {

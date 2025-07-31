@@ -25,6 +25,21 @@ export interface LoginData {
   password: string;
 }
 
+export interface UserPreferences {
+  id?: number;
+  user_id?: number;
+  skill_level?: string;
+  experience?: string;
+  goals?: string[];
+  time_commitment?: string;
+  preferred_style?: string;
+  current_track?: string;
+  current_lesson_id?: number;
+  completed_assessment?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
 class AuthService {
   private token: string | null = null;
   private user: User | null = null;
@@ -150,6 +165,56 @@ class AuthService {
     }
 
     return response;
+  }
+
+  // User Preferences methods
+  async saveUserPreferences(preferences: Omit<UserPreferences, 'id' | 'user_id' | 'created_at' | 'updated_at'>): Promise<UserPreferences> {
+    const response = await this.fetchWithAuth(`${API_BASE_URL}/api/preferences`, {
+      method: 'POST',
+      body: JSON.stringify(preferences),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || 'Failed to save preferences');
+    }
+
+    return response.json();
+  }
+
+  async getUserPreferences(): Promise<UserPreferences | null> {
+    try {
+      const response = await this.fetchWithAuth(`${API_BASE_URL}/api/preferences`);
+      
+      if (response.status === 404) {
+        // No preferences found
+        return null;
+      }
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to load preferences');
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error('Error loading user preferences:', error);
+      return null;
+    }
+  }
+
+  async updateUserPreferences(preferences: Partial<UserPreferences>): Promise<UserPreferences> {
+    const response = await this.fetchWithAuth(`${API_BASE_URL}/api/preferences`, {
+      method: 'PUT',
+      body: JSON.stringify(preferences),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || 'Failed to update preferences');
+    }
+
+    return response.json();
   }
 }
 

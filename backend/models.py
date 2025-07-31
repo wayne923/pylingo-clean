@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text, ForeignKey, JSON
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -17,6 +17,7 @@ class User(Base):
     
     # Relationships
     progress = relationship("UserProgress", back_populates="user")
+    preferences = relationship("UserPreferences", back_populates="user", uselist=False)
 
 class Track(Base):
     __tablename__ = "tracks"
@@ -63,3 +64,22 @@ class UserProgress(Base):
     # Relationships
     user = relationship("User", back_populates="progress")
     lesson = relationship("Lesson", back_populates="user_progress")
+
+class UserPreferences(Base):
+    __tablename__ = "user_preferences"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, unique=True)
+    skill_level = Column(String(20))  # beginner, intermediate, advanced
+    experience = Column(String(50))  # never-coded, some-basics, etc.
+    goals = Column(JSON)  # Array of goal IDs
+    time_commitment = Column(String(20))  # 15min, 30min, 1hour
+    preferred_style = Column(String(50))  # hands-on, theory-first, etc.
+    current_track = Column(String(50))  # Current learning track
+    current_lesson_id = Column(Integer)  # Current lesson ID
+    completed_assessment = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    user = relationship("User", back_populates="preferences")

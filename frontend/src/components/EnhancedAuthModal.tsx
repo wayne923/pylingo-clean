@@ -223,9 +223,23 @@ print(x.shape)`,
       
       console.log('User data to save:', userData);
       
-      // In a real app, you'd save this to the backend
-      localStorage.setItem('userPreferences', JSON.stringify(userData));
-      console.log('Data saved to localStorage');
+      try {
+        // Save preferences to backend instead of localStorage
+        await authService.saveUserPreferences({
+          skill_level: skillLevel,
+          experience: personalizeData.experience,
+          goals: personalizeData.goals,
+          time_commitment: personalizeData.timeCommitment,
+          preferred_style: personalizeData.preferredStyle,
+          completed_assessment: true
+        });
+        console.log('Data saved to backend successfully');
+      } catch (saveError) {
+        console.error('Failed to save preferences to backend:', saveError);
+        // Fallback to localStorage as backup
+        localStorage.setItem('userPreferences', JSON.stringify(userData));
+        console.log('Fallback: Data saved to localStorage');
+      }
       
       setStep('complete');
       console.log('Step set to complete');
