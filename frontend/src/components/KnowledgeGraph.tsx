@@ -48,13 +48,15 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [dragNode, setDragNode] = useState<GraphNode | null>(null);
   const [transform] = useState({ x: 0, y: 0, scale: 1 });
+  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
+  const [expandedListItems, setExpandedListItems] = useState<Set<string>>(new Set());
 
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number | null>(null);
 
 
-  // Create knowledge graph nodes
+  // Create knowledge graph nodes\n  // eslint-disable-next-line react-hooks/exhaustive-deps
   const createGraphNodes = useCallback((): GraphNode[] => {
     const graphNodes: GraphNode[] = [
       // Foundation Layer
@@ -247,7 +249,7 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
         nextLesson
       };
     });
-  }, [lessons, completedLessons]);
+  }, [lessons, completedLessons, expandedNodes]);
 
   // Initialize nodes
   useEffect(() => {
@@ -261,9 +263,10 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
     setNodes(prevNodes => {
       const newNodes = [...prevNodes];
       const center = { x: 400, y: 300 };
-      const repulsion = 100;
-      const attraction = 0.01;
-      const damping = 0.9;
+      const repulsion = 150; // Increased for better spacing
+      const attraction = 0.02; // Slightly increased for better connections
+      const damping = 0.85; // Reduced for more stable movement
+      const minDistance = 120; // Minimum distance between nodes
 
       // Initialize velocities if not present
       newNodes.forEach(node => {
@@ -287,8 +290,8 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
           const dy = node.position.y - other.position.y;
           const distance = Math.sqrt(dx * dx + dy * dy) || 1;
           
-          if (distance < 200) {
-            const force = repulsion / (distance * distance);
+          if (distance < minDistance * 2) {
+            const force = repulsion / Math.max(distance * distance, 10);
             fx += (dx / distance) * force;
             fy += (dy / distance) * force;
           }
@@ -300,28 +303,45 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
           if (connected) {
             const dx = connected.position.x - node.position.x;
             const dy = connected.position.y - node.position.y;
+            const distance = Math.sqrt(dx * dx + dy * dy) || 1;
             
-            fx += dx * attraction;
-            fy += dy * attraction;
+            // Ideal distance for connected nodes
+            const idealDistance = minDistance * 1.5;
+            const force = (distance - idealDistance) * attraction;
+            
+            fx += (dx / distance) * force;
+            fy += (dy / distance) * force;
           }
         });
 
-        // Spring force toward center
+        // Spring force toward center (weaker)
         const centerDx = center.x - node.position.x;
         const centerDy = center.y - node.position.y;
-        fx += centerDx * 0.001;
-        fy += centerDy * 0.001;
+        const centerDistance = Math.sqrt(centerDx * centerDx + centerDy * centerDy);
+        if (centerDistance > 250) {
+          fx += centerDx * 0.0005;
+          fy += centerDy * 0.0005;
+        }
 
-        // Update velocity and position
+        // Update velocity and position with better constraints
         node.velocity!.x = (node.velocity!.x + fx) * damping;
         node.velocity!.y = (node.velocity!.y + fy) * damping;
+        
+        // Limit velocity to prevent erratic movement
+        const maxVelocity = 5;
+        const velocityMagnitude = Math.sqrt(node.velocity!.x * node.velocity!.x + node.velocity!.y * node.velocity!.y);
+        if (velocityMagnitude > maxVelocity) {
+          node.velocity!.x = (node.velocity!.x / velocityMagnitude) * maxVelocity;
+          node.velocity!.y = (node.velocity!.y / velocityMagnitude) * maxVelocity;
+        }
         
         node.position.x += node.velocity!.x;
         node.position.y += node.velocity!.y;
 
-        // Keep within bounds
-        node.position.x = Math.max(50, Math.min(750, node.position.x));
-        node.position.y = Math.max(50, Math.min(550, node.position.y));
+        // Keep within bounds with padding
+        const padding = 80;
+        node.position.x = Math.max(padding, Math.min(800 - padding, node.position.x));
+        node.position.y = Math.max(padding, Math.min(600 - padding, node.position.y));
       }
 
       return newNodes;
@@ -498,7 +518,20 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
                   onMouseDown={(e) => handleMouseDown(node, e)}
                   onMouseEnter={() => setHoveredNode(node)}
                   onMouseLeave={() => setHoveredNode(null)}
-                  onClick={() => setSelectedNode(node)}
+                  onClick={() => {
+                    if (node.lessons.length > 1 && !node.id.includes('-lesson-')) {
+                      // Toggle expansion for main nodes with multiple lessons
+                      const newExpanded = new Set(expandedNodes);
+                      if (newExpanded.has(node.id)) {
+                        newExpanded.delete(node.id);
+                      } else {
+                        newExpanded.add(node.id);
+                      }
+                      setExpandedNodes(newExpanded);
+                    } else {
+                      setSelectedNode(node);
+                    }
+                  }}
                   style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
                 />
                 
@@ -540,31 +573,79 @@ const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
         </svg>
         ) : (
           <div className="skills-list">
-            {filteredNodes.map(node => (
-              <div 
-                key={node.id} 
-                className={`skill-card ${!node.unlocked ? 'locked' : ''}`}
-                onClick={() => setSelectedNode(node)}
-              >
-                <div className="skill-header">
-                  <span className="skill-icon">{node.icon}</span>
-                  <div className="skill-info">
-                    <h3>{node.title}</h3>
-                    <p className="skill-description">{node.description}</p>
-                  </div>
-                  <div className="skill-stats">
-                    <div className="progress-circle">
-                      <span>{Math.round(node.progress)}%</span>
+            {filteredNodes.filter(node => !node.id.includes('-lesson-')).map(node => (
+              <div key={node.id}>
+                <div 
+                  className={`skill-card ${!node.unlocked ? 'locked' : ''}`}
+                  onClick={() => {
+                    if (node.lessons.length > 1) {
+                      const newExpanded = new Set(expandedListItems);
+                      if (newExpanded.has(node.id)) {
+                        newExpanded.delete(node.id);
+                      } else {
+                        newExpanded.add(node.id);
+                      }
+                      setExpandedListItems(newExpanded);
+                    } else {
+                      setSelectedNode(node);
+                    }
+                  }}
+                >
+                  <div className="skill-header">
+                    <span className="skill-icon">{node.icon}</span>
+                    <div className="skill-info">
+                      <h3>
+                        {node.title}
+                        {node.lessons.length > 1 && (
+                          <span className="expand-indicator">
+                            {expandedListItems.has(node.id) ? ' ▼' : ' ▶'}
+                          </span>
+                        )}
+                      </h3>
+                      <p className="skill-description">{node.description}</p>
+                    </div>
+                    <div className="skill-stats">
+                      <div className="progress-circle">
+                        <span>{Math.round(node.progress)}%</span>
+                      </div>
                     </div>
                   </div>
+                  
+                  {node.progress > 0 && (
+                    <div className="progress-bar">
+                      <div 
+                        className="progress-fill"
+                        style={{ width: `${node.progress}%` }}
+                      />
+                    </div>
+                  )}
                 </div>
                 
-                {node.progress > 0 && (
-                  <div className="progress-bar">
-                    <div 
-                      className="progress-fill"
-                      style={{ width: `${node.progress}%` }}
-                    />
+                {/* Expanded lesson list */}
+                {expandedListItems.has(node.id) && (
+                  <div className="lesson-sublist">
+                    {node.lessons.map(lesson => (
+                      <div 
+                        key={lesson.id}
+                        className={`lesson-item ${completedLessons.has(lesson.id) ? 'completed' : ''}`}
+                        onClick={() => {
+                          if (!completedLessons.has(lesson.id)) {
+                            onStartLesson(lesson.id, lesson.track);
+                          }
+                        }}
+                      >
+                        <span className="lesson-icon">
+                          {completedLessons.has(lesson.id) ? '✅' : '📚'}
+                        </span>
+                        <div className="lesson-info">
+                          <h4>{lesson.title}</h4>
+                          <p>{lesson.description || 'Complete this lesson to progress'}</p>
+                        </div>
+                        <div className="lesson-status">
+                          {completedLessons.has(lesson.id) ? 'Complete' : 'Start'}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
