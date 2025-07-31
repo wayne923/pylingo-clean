@@ -141,9 +141,15 @@ print(x.shape)`,
           setIsLoading(false);
           return;
         }
+        // Register user first
         await authService.register({
           username: formData.username,
           email: formData.email,
+          password: formData.password
+        });
+        // Then auto-login the newly registered user
+        await authService.login({
+          username: formData.username,
           password: formData.password
         });
       } else {

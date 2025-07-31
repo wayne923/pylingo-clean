@@ -253,34 +253,40 @@ function App() {
         </div>
         
         <div className="header-center">
-          <div className="api-controls">
-            <button 
-              onClick={loadApiLessons}
-              disabled={loading || useApi}
-              className="api-button"
-            >
-              {loading ? 'Loading...' : useApi ? 'Using API' : 'Load from API'}
-            </button>
-            <button 
-              onClick={() => setUseApi(false)}
-              disabled={!useApi}
-              className="api-button"
-            >
-              Use Local Data
-            </button>
-          </div>
+          {/* Developer controls - hidden in production */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="api-controls">
+              <button 
+                onClick={loadApiLessons}
+                disabled={loading || useApi}
+                className="api-button"
+              >
+                {loading ? 'Loading...' : useApi ? 'Using API' : 'Load from API'}
+              </button>
+              <button 
+                onClick={() => setUseApi(false)}
+                disabled={!useApi}
+                className="api-button"
+              >
+                Use Local Data
+              </button>
+            </div>
+          )}
         </div>
         
         <div className="header-right">
           {user ? (
             <div className="user-menu">
               <span className="welcome-text">Welcome, {user.username}!</span>
-              <button 
-                onClick={() => setShowAdminPanel(true)}
-                className="admin-button"
-              >
-                📚 Create Lesson
-              </button>
+              {/* Admin controls - only show in development */}
+              {process.env.NODE_ENV === 'development' && (
+                <button 
+                  onClick={() => setShowAdminPanel(true)}
+                  className="admin-button"
+                >
+                  📚 Create Lesson
+                </button>
+              )}
               <button onClick={handleLogout} className="logout-button">
                 Logout
               </button>

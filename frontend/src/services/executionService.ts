@@ -90,27 +90,38 @@ class ExecutionService {
   // Determine if a lesson should use Docker based on its concepts
   shouldUseDocker(concepts: string[]): boolean {
     const dockerRequiredConcepts = [
+      // Web frameworks that definitely need Docker
       'flask',
-      'fastapi',
+      'fastapi', 
       'web-apis',
       'sqlite',
       'databases',
       'http-requests',
       'file-processing',
-      // AI/ML concepts that need full PyTorch ecosystem
-      'pytorch',
-      'transformers',
-      'multi-head-attention',
-      'transformer-block',
-      'gpt',
+      // Advanced AI/ML concepts that need full ecosystem
       'fine-tuning',
       'scikit-learn',
       'isolation-forest',
       'anomaly-detection',
-      // Visualization that needs full package ecosystem
+      // Advanced visualization
       'seaborn',
       'plotly',
       'interactive-visualization'
+    ];
+
+    // For now, make basic AI/ML concepts browser-compatible
+    // These can use mock implementations or simplified versions
+    const browserCompatibleConcepts = [
+      'pytorch',
+      'tensors',
+      'deep-learning',
+      'transformers',
+      'multi-head-attention',
+      'transformer-block',
+      'gpt',
+      'numpy',
+      'arrays',
+      'data-structures'
     ];
 
     return concepts.some(concept => dockerRequiredConcepts.includes(concept));
