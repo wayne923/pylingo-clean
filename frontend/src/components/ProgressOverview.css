@@ -237,15 +237,15 @@
   height: 3px;
 }
 
-.difficulty-card.easy::before {
+.difficulty-card.beginner::before {
   background: #22c55e;
 }
 
-.difficulty-card.medium::before {
+.difficulty-card.intermediate::before {
   background: #f59e0b;
 }
 
-.difficulty-card.hard::before {
+.difficulty-card.advanced::before {
   background: #ef4444;
 }
 

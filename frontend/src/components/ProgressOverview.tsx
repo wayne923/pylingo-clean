@@ -147,17 +147,17 @@ const ProgressOverview: React.FC<ProgressOverviewProps> = ({
     const overallProgress = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
     
     // Calculate difficulty distribution
-    const easyCompleted = lessons.filter(l => l.difficulty === 'easy' && completedLessons.has(l.id)).length;
-    const mediumCompleted = lessons.filter(l => l.difficulty === 'medium' && completedLessons.has(l.id)).length;
-    const hardCompleted = lessons.filter(l => l.difficulty === 'hard' && completedLessons.has(l.id)).length;
+    const beginnerCompleted = lessons.filter(l => l.difficulty === 'beginner' && completedLessons.has(l.id)).length;
+    const intermediateCompleted = lessons.filter(l => l.difficulty === 'intermediate' && completedLessons.has(l.id)).length;
+    const advancedCompleted = lessons.filter(l => l.difficulty === 'advanced' && completedLessons.has(l.id)).length;
     
     return {
       totalLessons,
       completedCount,
       overallProgress,
-      easyCompleted,
-      mediumCompleted,
-      hardCompleted
+      beginnerCompleted,
+      intermediateCompleted,
+      advancedCompleted
     };
   };
 
@@ -234,25 +234,25 @@ const ProgressOverview: React.FC<ProgressOverviewProps> = ({
       <div className="difficulty-breakdown">
         <h3>🎯 Difficulty Mastery</h3>
         <div className="difficulty-grid">
-          <div className="difficulty-card easy">
+          <div className="difficulty-card beginner">
             <div className="difficulty-icon">😊</div>
             <div className="difficulty-info">
-              <h4>Easy</h4>
-              <div className="difficulty-count">{overallStats.easyCompleted} completed</div>
+              <h4>Beginner</h4>
+              <div className="difficulty-count">{overallStats.beginnerCompleted} completed</div>
             </div>
           </div>
-          <div className="difficulty-card medium">
+          <div className="difficulty-card intermediate">
             <div className="difficulty-icon">🤔</div>
             <div className="difficulty-info">
-              <h4>Medium</h4>
-              <div className="difficulty-count">{overallStats.mediumCompleted} completed</div>
+              <h4>Intermediate</h4>
+              <div className="difficulty-count">{overallStats.intermediateCompleted} completed</div>
             </div>
           </div>
-          <div className="difficulty-card hard">
+          <div className="difficulty-card advanced">
             <div className="difficulty-icon">🔥</div>
             <div className="difficulty-info">
-              <h4>Hard</h4>
-              <div className="difficulty-count">{overallStats.hardCompleted} completed</div>
+              <h4>Advanced</h4>
+              <div className="difficulty-count">{overallStats.advancedCompleted} completed</div>
             </div>
           </div>
         </div>

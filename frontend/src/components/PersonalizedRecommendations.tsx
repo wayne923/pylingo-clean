@@ -87,7 +87,7 @@ const PersonalizedRecommendations: React.FC<PersonalizedRecommendationsProps> = 
     // Recommendation 3: Skill level appropriate challenges
     if (completedCount >= 5 && skillLevel !== 'beginner') {
       const challengeLessons = lessons.filter(l => 
-        l.track === 'algorithms' && l.difficulty === 'medium'
+        l.track === 'algorithms' && l.difficulty === 'intermediate'
       ).filter(l => !completedLessons.has(l.id)).slice(0, 2);
       
       if (challengeLessons.length > 0) {
@@ -106,7 +106,7 @@ const PersonalizedRecommendations: React.FC<PersonalizedRecommendationsProps> = 
     // Recommendation 4: Foundation strengthening
     if (experience === 'no-programming' && completedCount < 10) {
       const foundationLessons = lessons.filter(l => 
-        l.track === 'beginner' && l.difficulty === 'easy'
+        l.track === 'beginner' && l.difficulty === 'beginner'
       ).filter(l => !completedLessons.has(l.id)).slice(0, 3);
       
       if (foundationLessons.length > 0) {

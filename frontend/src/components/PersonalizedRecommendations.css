@@ -177,17 +177,17 @@
   text-transform: capitalize;
 }
 
-.difficulty.easy {
+.difficulty.beginner {
   background: #dcfce7;
   color: #166534;
 }
 
-.difficulty.medium {
+.difficulty.intermediate {
   background: #fef3c7;
   color: #92400e;
 }
 
-.difficulty.hard {
+.difficulty.advanced {
   background: #fee2e2;
   color: #991b1b;
 }

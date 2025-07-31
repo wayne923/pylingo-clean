@@ -159,7 +159,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({
     // Action 6: Daily challenge (if advanced enough)
     if (completedCount >= 10) {
       const challengeLessons = lessons.filter(l => 
-        l.difficulty === 'hard' && !completedLessons.has(l.id)
+        l.difficulty === 'advanced' && !completedLessons.has(l.id)
       );
       if (challengeLessons.length > 0) {
         const challengeLesson = challengeLessons[0];
