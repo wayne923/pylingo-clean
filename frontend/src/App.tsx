@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import Lesson from './components/Lesson';
+import ChallengeLesson from './components/ChallengeLesson';
 import LessonList from './components/LessonList';
 import ProgressBar from './components/ProgressBar';
 import TrackSelector from './components/TrackSelector';
@@ -20,7 +21,7 @@ function App() {
   const [apiLessons, setApiLessons] = useState<ApiLesson[]>([]);
   const [useApi, setUseApi] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [selectedTrack, setSelectedTrack] = useState('ai-ml');
+  const [selectedTrack, setSelectedTrack] = useState('algorithms');
   const [currentStreak] = useState(0);
   const [user, setUser] = useState<User | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -257,8 +258,8 @@ function App() {
         </div>
         
         <div className="header-center">
-          {/* Developer controls - hidden in production */}
-          {process.env.NODE_ENV === 'development' && (
+          {/* Developer controls - only visible in development mode */}
+          {process.env.NODE_ENV === 'development' && process.env.REACT_APP_SHOW_DEV_CONTROLS === 'true' && (
             <div className="api-controls">
               <button 
                 onClick={loadApiLessons}
@@ -282,8 +283,8 @@ function App() {
           {user ? (
             <div className="user-menu">
               <span className="welcome-text">Welcome, {user.username}!</span>
-              {/* Admin controls - only show in development */}
-              {process.env.NODE_ENV === 'development' && (
+              {/* Admin controls - only show in development with explicit flag */}
+              {process.env.NODE_ENV === 'development' && process.env.REACT_APP_SHOW_DEV_CONTROLS === 'true' && (
                 <button 
                   onClick={() => setShowAdminPanel(true)}
                   className="admin-button"
@@ -339,12 +340,21 @@ function App() {
           />
         </div>
         <div className="lesson-content">
-          <Lesson 
-            key={currentLesson.id}
-            lesson={currentLesson}
-            onComplete={() => handleLessonComplete(currentLesson.id)}
-            isCompleted={completedLessons.has(currentLesson.id)}
-          />
+          {currentLesson.type === 'challenge' ? (
+            <ChallengeLesson 
+              key={currentLesson.id}
+              lesson={currentLesson}
+              onComplete={() => handleLessonComplete(currentLesson.id)}
+              isCompleted={completedLessons.has(currentLesson.id)}
+            />
+          ) : (
+            <Lesson 
+              key={currentLesson.id}
+              lesson={currentLesson}
+              onComplete={() => handleLessonComplete(currentLesson.id)}
+              isCompleted={completedLessons.has(currentLesson.id)}
+            />
+          )}
         </div>
       </main>
       
