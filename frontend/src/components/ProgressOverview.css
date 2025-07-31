@@ -1,0 +1,439 @@
+.progress-overview {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+}
+
+.overview-header {
+  margin-bottom: 24px;
+}
+
+.overview-header h2 {
+  font-size: 1.5rem;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.overview-header p {
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Overall Stats */
+.overall-stats {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card.main {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card.main::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(180deg); }
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.stat-label {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.stat-progress {
+  background: rgba(255, 255, 255, 0.2);
+  height: 6px;
+  border-radius: 3px;
+  margin: 12px 0;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+.progress-bar {
+  height: 100%;
+  background: white;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.stat-subtitle {
+  font-size: 0.85rem;
+  opacity: 0.9;
+  position: relative;
+  z-index: 1;
+}
+
+.stat-card:not(.main) .stat-number {
+  color: #1f2937;
+  font-size: 2rem;
+}
+
+.stat-card:not(.main) .stat-label {
+  color: #374151;
+}
+
+.stat-card:not(.main) .stat-subtitle {
+  color: #6b7280;
+}
+
+/* Track Progress Section */
+.track-progress-section {
+  margin-bottom: 32px;
+}
+
+.track-progress-section h3 {
+  font-size: 1.25rem;
+  color: #1f2937;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.track-progress-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.track-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.track-card:hover {
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.track-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.track-icon {
+  font-size: 1.75rem;
+  flex-shrink: 0;
+}
+
+.track-info {
+  flex: 1;
+}
+
+.track-info h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+
+.track-stats {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.track-percentage {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #059669;
+}
+
+.track-progress-bar {
+  background: #f3f4f6;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+/* Difficulty Breakdown */
+.difficulty-breakdown {
+  margin-bottom: 32px;
+}
+
+.difficulty-breakdown h3 {
+  font-size: 1.25rem;
+  color: #1f2937;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.difficulty-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.difficulty-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.difficulty-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+.difficulty-card.easy::before {
+  background: #22c55e;
+}
+
+.difficulty-card.medium::before {
+  background: #f59e0b;
+}
+
+.difficulty-card.hard::before {
+  background: #ef4444;
+}
+
+.difficulty-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.difficulty-icon {
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+
+.difficulty-info h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+
+.difficulty-count {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+/* Achievements Section */
+.achievements-section h3 {
+  font-size: 1.25rem;
+  color: #1f2937;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.achievement-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.achievement-card.earned {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-color: #f59e0b;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+}
+
+.achievement-card.locked {
+  opacity: 0.6;
+  background: #f9fafb;
+}
+
+.achievement-card.earned:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+}
+
+.achievement-card.locked:hover {
+  transform: translateY(-1px);
+}
+
+.achievement-icon {
+  font-size: 2.5rem;
+  margin-bottom: 8px;
+}
+
+.achievement-info h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+
+.achievement-info p {
+  color: #6b7280;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.achievement-progress {
+  margin-top: 8px;
+}
+
+.progress-text {
+  color: #374151;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.progress-bar-small {
+  background: #e5e7eb;
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill-small {
+  height: 100%;
+  background: #3b82f6;
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .progress-overview {
+    padding: 20px;
+  }
+  
+  .overall-stats {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .stat-number {
+    font-size: 2rem;
+  }
+  
+  .track-progress-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .difficulty-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  
+  .achievements-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .progress-overview {
+    padding: 16px;
+  }
+  
+  .overview-header h2 {
+    font-size: 1.25rem;
+  }
+  
+  .stat-card {
+    padding: 16px;
+  }
+  
+  .stat-number {
+    font-size: 1.75rem;
+  }
+  
+  .track-card {
+    padding: 12px;
+  }
+  
+  .track-header {
+    gap: 8px;
+  }
+  
+  .track-icon {
+    font-size: 1.5rem;
+  }
+  
+  .difficulty-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .achievements-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .achievement-card {
+    padding: 12px;
+  }
+  
+  .achievement-icon {
+    font-size: 2rem;
+  }
+}

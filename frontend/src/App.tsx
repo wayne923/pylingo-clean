@@ -11,6 +11,7 @@ import AdminPanel from './components/AdminPanel';
 import ModernLandingPage from './components/ModernLandingPage';
 import EnhancedAuthModal from './components/EnhancedAuthModal';
 import ProgressVisualization from './components/ProgressVisualization';
+import Dashboard from './components/Dashboard';
 import { lessons } from './data/lessons';
 import { apiService, ApiLesson } from './services/api';
 import { authService, User } from './services/authService';
@@ -29,6 +30,7 @@ function App() {
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showLandingPage, setShowLandingPage] = useState(true);
   const [userLevel, setUserLevel] = useState('Beginner');
+  const [activeView, setActiveView] = useState<'dashboard' | 'lesson'>('dashboard');
 
   const currentLessons = useApi ? apiLessons : lessons;
   const filteredLessons = currentLessons.filter(lesson => lesson.track === selectedTrack);
@@ -55,6 +57,17 @@ function App() {
 
   const handleSelectLesson = (lessonId: number) => {
     setCurrentLessonId(lessonId);
+    setActiveView('lesson');
+  };
+
+  const handleStartLesson = (lessonId: number, track: string) => {
+    setCurrentLessonId(lessonId);
+    setSelectedTrack(track);
+    setActiveView('lesson');
+  };
+
+  const handleBackToDashboard = () => {
+    setActiveView('dashboard');
   };
 
   const handleTrackChange = (track: string) => {
@@ -317,56 +330,78 @@ function App() {
         </div>
       </header>
 
-      {/* Enhanced Progress Visualization */}
-      <ProgressVisualization
-        completedLessons={completedLessons}
-        currentStreak={currentStreak}
-        totalLessons={filteredLessons.length}
-        userLevel={userLevel}
-      />
-
       <main className="main-content">
-        <div className="sidebar">
-          <TrackSelector
-            lessons={currentLessons}
-            selectedTrack={selectedTrack}
-            onTrackChange={handleTrackChange}
-          />
-          <ProgressBar 
-            completed={filteredLessons.filter(lesson => completedLessons.has(lesson.id)).length}
-            total={filteredLessons.length}
-            track={`${selectedTrack.charAt(0).toUpperCase() + selectedTrack.slice(1)} Track`}
-          />
-          <AchievementPanel
+        {activeView === 'dashboard' ? (
+          <Dashboard
+            user={user}
             completedLessons={completedLessons}
-            totalLessons={filteredLessons.length}
-            currentStreak={currentStreak}
-          />
-          <LessonList
-            lessons={filteredLessons}
             currentLessonId={currentLessonId}
-            completedLessons={completedLessons}
-            onSelectLesson={handleSelectLesson}
+            onStartLesson={handleStartLesson}
+            selectedTrack={selectedTrack}
           />
-        </div>
-        <div className="lesson-content">
-          {currentLesson && currentLesson.type === 'challenge' ? (
-            <ChallengeLesson 
-              key={currentLesson.id}
-              lesson={currentLesson}
-              onComplete={handleLessonComplete}
-            />
-          ) : currentLesson ? (
-            <Lesson 
-              key={currentLesson.id}
-              lesson={currentLesson}
-              onComplete={() => handleLessonComplete(currentLesson.id)}
-              isCompleted={completedLessons.has(currentLesson.id)}
-            />
-          ) : (
-            <div>Loading lesson...</div>
-          )}
-        </div>
+        ) : (
+          <>
+            {/* Back to Dashboard Button */}
+            <div className="lesson-header">
+              <button 
+                onClick={handleBackToDashboard}
+                className="back-to-dashboard-btn"
+              >
+                ← Back to Dashboard
+              </button>
+              <ProgressVisualization
+                completedLessons={completedLessons}
+                currentStreak={currentStreak}
+                totalLessons={filteredLessons.length}
+                userLevel={userLevel}
+              />
+            </div>
+
+            <div className="lesson-view">
+              <div className="sidebar">
+                <TrackSelector
+                  lessons={currentLessons}
+                  selectedTrack={selectedTrack}
+                  onTrackChange={handleTrackChange}
+                />
+                <ProgressBar 
+                  completed={filteredLessons.filter(lesson => completedLessons.has(lesson.id)).length}
+                  total={filteredLessons.length}
+                  track={`${selectedTrack.charAt(0).toUpperCase() + selectedTrack.slice(1)} Track`}
+                />
+                <AchievementPanel
+                  completedLessons={completedLessons}
+                  totalLessons={filteredLessons.length}
+                  currentStreak={currentStreak}
+                />
+                <LessonList
+                  lessons={filteredLessons}
+                  currentLessonId={currentLessonId}
+                  completedLessons={completedLessons}
+                  onSelectLesson={handleSelectLesson}
+                />
+              </div>
+              <div className="lesson-content">
+                {currentLesson && currentLesson.type === 'challenge' ? (
+                  <ChallengeLesson 
+                    key={currentLesson.id}
+                    lesson={currentLesson}
+                    onComplete={handleLessonComplete}
+                  />
+                ) : currentLesson ? (
+                  <Lesson 
+                    key={currentLesson.id}
+                    lesson={currentLesson}
+                    onComplete={() => handleLessonComplete(currentLesson.id)}
+                    isCompleted={completedLessons.has(currentLesson.id)}
+                  />
+                ) : (
+                  <div>Loading lesson...</div>
+                )}
+              </div>
+            </div>
+          </>
+        )}
       </main>
       
       <AuthModal
