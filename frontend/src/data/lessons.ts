@@ -577,7 +577,8 @@ const originalLessons: Lesson[] = [
     concepts: ["variables", "strings", "print"],
     validation: {
       requiredKeywords: ["print"],
-      mustContain: ["name", "="]
+      mustContain: ["name", "="],
+      forbiddenKeywords: ["\"Hello, World!\"", "'Hello, World!'"]
     }
   },
   {
@@ -616,7 +617,8 @@ const originalLessons: Lesson[] = [
     concepts: ["strings", "f-strings", "variables"],
     validation: {
       requiredKeywords: ["print", "f\""],
-      mustContain: ["{", "}", "name", "age"]
+      mustContain: ["{", "}", "name", "age"],
+      forbiddenKeywords: ["\"Hello Alice, you are 25 years old!\"", "'Hello Alice, you are 25 years old!'", "25", "Alice"]
     }
   },
   {
